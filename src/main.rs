@@ -1,29 +1,17 @@
 pub mod arena;
+pub mod opt;
 pub mod repo;
 
-use arena::ArenaId;
+use arena::{ArenaFull, ArenaId};
 use axum::{
     extract::{Extension, Path},
     routing::get,
     AddExtensionLayer, Router,
 };
 use clap::Parser;
+use opt::Opt;
 use repo::Repo;
-use std::net::SocketAddr;
-
-#[derive(Parser, Debug, Clone)]
-struct Opt {
-    /// Binding address. Note that administrative endpoints must be protected
-    /// using a reverse proxy.
-    #[clap(long, default_value = "127.0.0.1:3000")]
-    bind: SocketAddr,
-    /// Disable access from all origins.
-    #[clap(long)]
-    nocors: bool,
-    /// Base url for the indexer.
-    #[clap(long = "lila", default_value = "http://l.org")]
-    lila: String,
-}
+use std::sync::Arc;
 
 #[tokio::main]
 async fn main() {
@@ -40,12 +28,13 @@ async fn main() {
     let opt = Opt::parse();
     dbg!(&opt);
 
-    let _repo = Repo::new(opt.lila.clone());
+    let repo = Arc::new(Repo::new(opt.clone()));
 
     let app = Router::new()
         .route("/", get(root))
         .route("/:id", get(arena))
-        .layer(AddExtensionLayer::new(opt.clone()));
+        .layer(AddExtensionLayer::new(opt.clone()))
+        .layer(AddExtensionLayer::new(repo));
 
     let app = if opt.nocors {
         app
@@ -64,35 +53,15 @@ async fn main() {
         .unwrap();
 }
 
-async fn arena(Path(arena_id): Path<ArenaId>, Extension(opt): Extension<Opt>) -> String {
-    let body = fetch(&arena_id, &opt).await;
-    match body {
+async fn arena(
+    Path(id): Path<ArenaId>,
+    Extension(opt): Extension<Opt>,
+    Extension(repo): Extension<Arc<Repo>>,
+) -> ArenaFull {
+    let arena = repo.get_arena(id).await;
+    match arena {
         Err(err) => format!("Oh no, an error message with code 200! {}", err),
         Ok(b) => b,
-    }
-}
-
-// ok. goal is to return some sort of Result<string>
-// where a response status != 200 returns an error
-async fn fetch(id: &ArenaId, opt: &Opt) -> Result<String, String> {
-    let client = reqwest::Client::new();
-    let url = format!("{}/tournament/{}", opt.lila, id.0);
-    dbg!(&url);
-    let res = client
-        .get(url)
-        .header("Accept", "application/vnd.lichess.v5+json")
-        .send()
-        .await;
-    let res = match res {
-        Err(e) => return Err(format!("Couldn't fetch: {}", e)),
-        Ok(r) => r,
-    };
-    if res.status() == 200 {
-        res.text()
-            .await
-            .map_err(|e| format!("Can't get response text body (?!): {}", e))
-    } else {
-        Err(format!("status: {}", res.status()))
     }
 }
 
