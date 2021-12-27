@@ -4,15 +4,16 @@ pub mod opt;
 pub mod repo;
 
 use crate::error::Error;
-use arena::{ArenaFull, ArenaId, ClientData};
+use arena::{ArenaFull, ArenaId, ClientData, UserId};
 use axum::{
-    extract::{Extension, Path},
+    extract::{Extension, Path, Query},
     routing::get,
     AddExtensionLayer, Json, Router,
 };
 use clap::Parser;
 use opt::Opt;
 use repo::Repo;
+use serde::Deserialize;
 use std::sync::Arc;
 
 #[tokio::main]
@@ -55,12 +56,19 @@ async fn main() {
         .unwrap();
 }
 
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct QueryParams {
+    user_id: Option<UserId>,
+}
+
 async fn arena(
     Path(id): Path<ArenaId>,
+    Query(query): Query<QueryParams>,
     Extension(repo): Extension<Arc<Repo>>,
 ) -> Result<Json<ClientData>, Error> {
     let full: ArenaFull = repo.get_arena(id).await?;
-    Ok(Json(ClientData::new(full)))
+    Ok(Json(ClientData::new(full, query.user_id)))
 }
 
 async fn root() -> &'static str {

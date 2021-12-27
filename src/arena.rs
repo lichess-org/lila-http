@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsValue;
+use serde_with::{serde_as, FromInto};
+use std::collections::HashMap;
 
 #[derive(Debug, Eq, PartialEq, Deserialize, Hash, Clone)]
 pub struct ArenaId(pub String);
@@ -34,23 +36,71 @@ pub struct ArenaShared {
     duel_teams: Option<JsValue>,
 }
 
+#[derive(Debug, Clone, Deserialize, Eq, PartialEq, Hash)]
+pub struct UserId(String);
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct GameId(String);
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct Rank(usize);
+
+#[serde_as]
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ArenaFull {
     #[serde(flatten)]
     shared: ArenaShared,
+    ongoing_user_games: HashMap<UserId, GameId>,
+    #[serde_as(as = "FromInto<String>")]
+    ranking: FullRanking,
+}
+
+#[derive(Debug, Clone)]
+struct FullRanking {
+    ranking: HashMap<UserId, Rank>,
+}
+
+impl From<String> for FullRanking {
+    fn from(user_ids_comma_separated: String) -> Self {
+        let user_ids: Vec<UserId> = user_ids_comma_separated
+            .split(",")
+            .into_iter()
+            .map(|uid| UserId(uid.to_string()))
+            .collect();
+        FullRanking {
+            ranking: user_ids
+                .into_iter()
+                .enumerate()
+                .map(|(index, uid)| (uid, Rank(index + 1)))
+                .collect(),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize)]
+struct ClientMe {
+    rank: Option<Rank>,
+    withdraw: bool,
+    game_id: Option<GameId>,
+    pause_delay: Option<u32>,
 }
 
 #[derive(Debug, Clone, Serialize)]
 pub struct ClientData {
     #[serde(flatten)]
     shared: ArenaShared,
+    me: Option<ClientMe>,
 }
 
 impl ClientData {
-    pub fn new(full: ArenaFull) -> ClientData {
+    pub fn new(full: ArenaFull, user_id: Option<UserId>) -> ClientData {
         ClientData {
             shared: full.shared,
+            me: user_id.map(|uid| ClientMe {
+                rank: full.ranking.ranking.get(&uid).cloned(),
+                withdraw: false,
+                game_id: full.ongoing_user_games.get(&uid).cloned(),
+                pause_delay: None,
+            }),
         }
     }
 }
