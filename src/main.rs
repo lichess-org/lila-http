@@ -9,6 +9,7 @@ use axum::{
 };
 // use serde::{Deserialize, Serialize};
 use clap::Parser;
+use serde::Deserialize;
 use std::net::SocketAddr;
 
 #[derive(Parser, Debug, Clone)]
@@ -62,32 +63,22 @@ async fn main() {
         .unwrap();
 }
 
-// #[serde_as]
-// #[derive(Deserialize, Debug, Copy, Clone, Eq, PartialEq)]
-// pub struct ArenaId(str);
+#[derive(Debug, Eq, PartialEq, Deserialize)]
+pub struct ArenaId(String);
 
-// async fn arena(Path(ArenaId(id))) -> Result<str> {
-//     id
-// }
-
-async fn arena(Path(arena_id): Path<String>, Extension(opt): Extension<Opt>) -> String {
-    // reqwest::get("http://httpbin.org/ip").await?.text().await
-    // reqwest::get("http://httpbin.org/ip").await.unwrap().text().await.unwrap()
-
+async fn arena(Path(arena_id): Path<ArenaId>, Extension(opt): Extension<Opt>) -> String {
     let body = fetch(&arena_id, &opt).await;
-    let res = match body {
+    match body {
         Err(err) => format!("Oh no, an error message with code 200! {}", err),
         Ok(b) => b,
-    };
-    // let res = body.map_err(|err| format!("Oh no, an error message with code 200! {}", err));
-    res
+    }
 }
 
 // ok. goal is to return some sort of Result<string>
 // where a response status != 200 returns an error
-async fn fetch(id: &str, opt: &Opt) -> Result<String, String> {
+async fn fetch(id: &ArenaId, opt: &Opt) -> Result<String, String> {
     let client = reqwest::Client::new();
-    let url = format!("{}/tournament/{}", opt.lila, id);
+    let url = format!("{}/tournament/{}", opt.lila, id.0);
     dbg!(&url);
     let res = client
         .get(url)
