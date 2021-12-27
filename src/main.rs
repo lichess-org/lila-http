@@ -1,13 +1,8 @@
 use axum::{
-    // extract::{Extension, Path, Query},
     extract::{Extension, Path},
     routing::get,
-    AddExtensionLayer,
-    // http::StatusCode,
-    // response::IntoResponse,
-    Router, // Json,
+    AddExtensionLayer, Router,
 };
-// use serde::{Deserialize, Serialize};
 use clap::Parser;
 use serde::Deserialize;
 use std::net::SocketAddr;
