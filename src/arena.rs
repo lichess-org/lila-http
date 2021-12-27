@@ -1,3 +1,4 @@
+use crate::mongo::Player;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsValue;
 use serde_with::{serde_as, FromInto};
@@ -37,7 +38,7 @@ pub struct ArenaShared {
 }
 
 #[derive(Debug, Clone, Deserialize, Eq, PartialEq, Hash)]
-pub struct UserId(String);
+pub struct UserId(pub String);
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct GameId(String);
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -88,18 +89,19 @@ struct ClientMe {
 pub struct ClientData {
     #[serde(flatten)]
     shared: ArenaShared,
+    #[serde(skip_serializing_if = "Option::is_none")]
     me: Option<ClientMe>,
 }
 
 impl ClientData {
-    pub fn new(full: ArenaFull, user_id: Option<UserId>) -> ClientData {
+    pub fn new(full: ArenaFull, user_id: Option<UserId>, player: Option<Player>) -> ClientData {
         ClientData {
             shared: full.shared,
             me: user_id.map(|uid| ClientMe {
                 rank: full.ranking.ranking.get(&uid).cloned(),
-                withdraw: false,
+                withdraw: todo!(),
                 game_id: full.ongoing_user_games.get(&uid).cloned(),
-                pause_delay: None,
+                pause_delay: todo!(),
             }),
         }
     }

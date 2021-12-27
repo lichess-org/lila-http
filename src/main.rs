@@ -1,5 +1,6 @@
 pub mod arena;
 pub mod error;
+pub mod mongo;
 pub mod opt;
 pub mod repo;
 
@@ -32,6 +33,7 @@ async fn main() {
     dbg!(&opt);
 
     let repo = Arc::new(Repo::new(opt.clone()));
+    let mongo = mongo::Mongo::new(opt.clone());
 
     let app = Router::new()
         .route("/", get(root))
