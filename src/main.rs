@@ -1,12 +1,14 @@
 pub mod arena;
+pub mod error;
 pub mod opt;
 pub mod repo;
 
-use arena::{ArenaFull, ArenaId};
+use crate::error::Error;
+use arena::{ArenaFull, ArenaId, ClientData};
 use axum::{
     extract::{Extension, Path},
     routing::get,
-    AddExtensionLayer, Router,
+    AddExtensionLayer, Json, Router,
 };
 use clap::Parser;
 use opt::Opt;
@@ -55,14 +57,10 @@ async fn main() {
 
 async fn arena(
     Path(id): Path<ArenaId>,
-    Extension(opt): Extension<Opt>,
     Extension(repo): Extension<Arc<Repo>>,
-) -> ArenaFull {
-    let arena = repo.get_arena(id).await;
-    match arena {
-        Err(err) => format!("Oh no, an error message with code 200! {}", err),
-        Ok(b) => b,
-    }
+) -> Result<Json<ClientData>, Error> {
+    let full: ArenaFull = repo.get_arena(id).await?;
+    Ok(Json(ClientData::new(full)))
 }
 
 async fn root() -> &'static str {

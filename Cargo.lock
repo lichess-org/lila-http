@@ -662,6 +662,7 @@ dependencies = [
  "moka",
  "reqwest",
  "serde",
+ "thiserror",
  "tokio",
  "tower-http",
 ]

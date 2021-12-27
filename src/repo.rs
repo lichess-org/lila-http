@@ -1,6 +1,8 @@
 use crate::arena::{ArenaFull, ArenaId};
+use crate::error::Error;
 use crate::opt::Opt;
 use moka::future::{Cache, CacheBuilder};
+use reqwest::StatusCode;
 use std::sync::Arc;
 use std::time::Duration;
 
@@ -21,25 +23,34 @@ impl Repo {
         }
     }
 
-    pub async fn get_arena(&self, id: ArenaId) -> Result<ArenaFull, Arc<reqwest::Error>> {
-        self.cache
+    pub async fn get_arena(&self, id: ArenaId) -> Result<ArenaFull, Error> {
+        let intermediate: Result<ArenaFull, Arc<reqwest::Error>> = self
+            .cache
             .get_or_try_insert_with(id.clone(), async move { self.fetch(&id).await })
-            .await
+            .await;
+
+        Ok(intermediate.map_err(|e| {
+            if e.status() == Some(StatusCode::NOT_FOUND) {
+                Error::NotFoundError
+            } else {
+                Error::ReqwestError(e)
+            }
+        })?)
     }
 
-    async fn fetch(&self, id: &ArenaId) -> reqwest::Result<ArenaFull> {
+    async fn fetch(&self, id: &ArenaId) -> Result<ArenaFull, reqwest::Error> {
         println!("Fetching {}.", id.0);
         let url = format!("{}/tournament/{}/lilarena", self.opt.lila, id.0);
         dbg!(&url);
-        let arena: ArenaFull = self
+        let full: ArenaFull = self
             .client
             .get(url)
             .header("Authorization", format!("Bearer {}", self.opt.bearer))
             .send()
             .await?
+            .error_for_status()?
             .json()
             .await?;
-        dbg!(&arena);
-        Ok(arena)
+        Ok(full)
     }
 }
