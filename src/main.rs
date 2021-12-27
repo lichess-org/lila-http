@@ -40,7 +40,7 @@ async fn main() {
     let opt = Opt::parse();
     dbg!(&opt);
 
-    let repo = Repo::new();
+    let _repo = Repo::new(opt.lila.clone());
 
     let app = Router::new()
         .route("/", get(root))
