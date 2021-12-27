@@ -1,10 +1,14 @@
+pub mod arena;
+pub mod repo;
+
+use arena::ArenaId;
 use axum::{
     extract::{Extension, Path},
     routing::get,
     AddExtensionLayer, Router,
 };
 use clap::Parser;
-use serde::Deserialize;
+use repo::Repo;
 use std::net::SocketAddr;
 
 #[derive(Parser, Debug, Clone)]
@@ -36,6 +40,8 @@ async fn main() {
     let opt = Opt::parse();
     dbg!(&opt);
 
+    let repo = Repo::new();
+
     let app = Router::new()
         .route("/", get(root))
         .route("/:id", get(arena))
@@ -57,9 +63,6 @@ async fn main() {
         .await
         .unwrap();
 }
-
-#[derive(Debug, Eq, PartialEq, Deserialize)]
-pub struct ArenaId(String);
 
 async fn arena(Path(arena_id): Path<ArenaId>, Extension(opt): Extension<Opt>) -> String {
     let body = fetch(&arena_id, &opt).await;
