@@ -662,6 +662,7 @@ dependencies = [
  "moka",
  "reqwest",
  "serde",
+ "serde_json",
  "thiserror",
  "tokio",
  "tower-http",
