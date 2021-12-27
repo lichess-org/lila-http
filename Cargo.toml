@@ -1,0 +1,20 @@
+[package]
+name = "lilarena"
+version = "0.1.0"
+edition = "2021"
+publish = false
+description = "handle some of the load of lichess.org/tournament"
+homepage = "https://lichess.org/tournament"
+repository = "https://github.com/ornicar/lilarena"
+readme = "README.md"
+license = "AGPL-3.0+"
+categories = ["games"]
+keywords = ["chess", "lichess"]
+
+[dependencies]
+axum = "0.4"
+env_logger = "0.9.0"
+log = "0.4.14"
+reqwest = "0.11.8"
+serde = "1.0.132"
+tokio = { version = "1", features = ["full"] }
