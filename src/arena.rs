@@ -1,8 +1,8 @@
-use crate::mongo::Player;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsValue;
 use serde_with::{serde_as, FromInto};
 use std::collections::HashMap;
+use std::sync::Arc;
 
 #[derive(Debug, Eq, PartialEq, Deserialize, Hash, Clone)]
 pub struct ArenaId(pub String);
@@ -49,6 +49,7 @@ pub struct Rank(usize);
 #[serde(rename_all = "camelCase")]
 pub struct ArenaFull {
     #[serde(flatten)]
+    pub id: ArenaId,
     shared: ArenaShared,
     ongoing_user_games: HashMap<UserId, GameId>,
     #[serde_as(as = "FromInto<String>")]
@@ -86,17 +87,17 @@ struct ClientMe {
 }
 
 #[derive(Debug, Clone, Serialize)]
-pub struct ClientData {
+pub struct ClientData<'a> {
     #[serde(flatten)]
-    shared: ArenaShared,
+    shared: &'a ArenaShared,
     #[serde(skip_serializing_if = "Option::is_none")]
     me: Option<ClientMe>,
 }
 
-impl ClientData {
-    pub fn new(full: ArenaFull, user_id: Option<UserId>) -> ClientData {
+impl<'a> ClientData<'a> {
+    pub fn new<'b>(full: &'b Arc<ArenaFull>, user_id: Option<UserId>) -> ClientData<'b> {
         ClientData {
-            shared: full.shared,
+            shared: &full.shared,
             me: user_id.map(|uid| ClientMe {
                 rank: full.ranking.ranking.get(&uid).cloned(),
                 withdraw: todo!(),

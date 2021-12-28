@@ -1,14 +1,13 @@
 pub mod arena;
-pub mod error;
 pub mod mongo;
 pub mod opt;
 pub mod redis;
 pub mod repo;
 
-use crate::error::Error;
 use arena::{ArenaFull, ArenaId, ClientData, UserId};
 use axum::{
     extract::{Extension, Path, Query},
+    http::StatusCode,
     routing::get,
     AddExtensionLayer, Json, Router,
 };
@@ -16,6 +15,7 @@ use clap::Parser;
 use opt::Opt;
 use repo::Repo;
 use serde::Deserialize;
+use serde_json::Value as JsValue;
 use std::sync::Arc;
 
 #[tokio::main]
@@ -33,7 +33,7 @@ async fn main() {
     let opt = Opt::parse();
     dbg!(&opt);
 
-    let repo = Arc::new(Repo::new(opt.clone()));
+    let repo = Arc::new(Repo::new());
     // let mongo = mongo::Mongo::new(opt.clone());
     // let redis = redis::Redis::new(opt.clone()).await.unwrap();
     redis::subscribe(opt.clone()).unwrap();
@@ -71,9 +71,17 @@ async fn arena(
     Path(id): Path<ArenaId>,
     Query(query): Query<QueryParams>,
     Extension(repo): Extension<Arc<Repo>>,
-) -> Result<Json<ClientData>, Error> {
-    let full: ArenaFull = repo.get_arena(id).await?;
-    Ok(Json(ClientData::new(full, query.user_id)))
+) -> Result<String, StatusCode> {
+    match repo.get(id) {
+        None => Err(StatusCode::NOT_FOUND),
+        Some(full) =>
+        // here I'm calling to_string instead of returning Json<ClientData>
+        // because that caused lifetime issues :-/
+        // TODO set json content-type
+        {
+            Ok(serde_json::to_string(&ClientData::new(&full, query.user_id)).unwrap())
+        }
+    }
 }
 
 async fn root() -> &'static str {
