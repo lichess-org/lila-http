@@ -2,10 +2,24 @@ use crate::arena::ArenaFull;
 use crate::repo::Repo;
 use futures::stream::StreamExt;
 use log::error;
-use std::error::Error;
 use std::sync::Arc;
+use redis::RedisError;
+use thiserror::{Error as ThisError};
+use serde_json::{Error as SerdeJsonError};
 
-pub fn subscribe(opt: crate::opt::Opt, repo: Arc<Repo>) -> Result<(), Box<dyn Error>> {
+#[derive(ThisError, Debug)]
+pub enum Error {
+    #[error("[REDIS] Error getting payload: {0}")]
+    RedisError(#[from] RedisError),
+    #[error("[SERDE] Error parsing JSON: {0}")]
+    SerdeJsonError(#[from] SerdeJsonError),
+}
+
+pub fn parse_message(msg: &redis::Msg) -> Result<ArenaFull, Error> {
+    Ok(serde_json::from_str(&msg.get_payload::<String>()?)?)
+}
+
+pub fn subscribe(opt: crate::opt::Opt, repo: Arc<Repo>) -> Result<(), Error> {
     let _ = tokio::spawn(async move {
         let client = redis::Client::open(opt.redis_url).unwrap();
         let subscribe_con = client.get_tokio_connection().await.unwrap();
@@ -13,11 +27,10 @@ pub fn subscribe(opt: crate::opt::Opt, repo: Arc<Repo>) -> Result<(), Box<dyn Er
         pubsub.subscribe("http-out").await.unwrap();
         let mut stream = pubsub.on_message();
         while let Some(msg) = stream.next().await {
-            let payload: String = msg.get_payload().unwrap();
-            let _: () = match serde_json::from_str::<ArenaFull>(&payload) {
-                Err(err) => error!("{:?}", err.to_string()),
-                Ok(full) => repo.put(full).await,
-            };
+            parse_message(&msg)
+                .map_err(|e| error!("{:?}", e))
+                .and_then(|full| Ok(async { repo.put(full).await }))
+                .ok();
         }
     });
     Ok(())
