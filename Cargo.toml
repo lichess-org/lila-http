@@ -1,11 +1,11 @@
 [package]
-name = "lilarena"
+name = "lila-http"
 version = "0.1.0"
 edition = "2021"
 publish = false
 description = "handle some of the load of lichess.org/tournament"
 homepage = "https://lichess.org/tournament"
-repository = "https://github.com/ornicar/lilarena"
+repository = "https://github.com/ornicar/lila-http"
 readme = "README.md"
 license = "AGPL-3.0+"
 categories = ["games"]
