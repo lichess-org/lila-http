@@ -15,7 +15,6 @@ use clap::Parser;
 use opt::Opt;
 use repo::Repo;
 use serde::Deserialize;
-use serde_json::Value as JsValue;
 use std::sync::Arc;
 
 #[tokio::main]
@@ -36,7 +35,7 @@ async fn main() {
     let repo = Arc::new(Repo::new());
     // let mongo = mongo::Mongo::new(opt.clone());
     // let redis = redis::Redis::new(opt.clone()).await.unwrap();
-    redis::subscribe(opt.clone()).unwrap();
+    redis::subscribe(opt.clone(), repo.clone()).unwrap();
 
     let app = Router::new()
         .route("/", get(root))

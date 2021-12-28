@@ -100,9 +100,9 @@ impl<'a> ClientData<'a> {
             shared: &full.shared,
             me: user_id.map(|uid| ClientMe {
                 rank: full.ranking.ranking.get(&uid).cloned(),
-                withdraw: todo!(),
+                withdraw: false, // todo!(),
                 game_id: full.ongoing_user_games.get(&uid).cloned(),
-                pause_delay: todo!(),
+                pause_delay: None,
             }),
         }
     }
