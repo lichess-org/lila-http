@@ -21,10 +21,23 @@ suddenly serve 5k/s more.
 So, the plan is to have a new service handle these tournament update requests.
 It gets info about ongoing tournaments from lila, and propagates it to the clients.
 
+### lila-ws, and now lila-http
+
 Much like [lila-ws](https://github.com/ornicar/lila-ws) moved the websocket traffic away from lila,
 lila-http handles some of the heavy HTTP traffic.
 
 It may be expanded to other areas than just the arena tournaments in the future.
+
+### Optional service
+
+One goal of lila-http is to be optional. Lichess should work just fine without it.
+It means that lila and lila-http can handle the same requests in the same way.
+
+This simplifies dev environments, which won't need to install lila-http,
+and makes production more resilient to lila-http restarts or outages.
+
+This goal is a nice-to-have, not a must-have, and might be dropped in the future
+if it proves to be too inconvenient.
 
 ### Why Rust
 
