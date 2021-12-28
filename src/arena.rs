@@ -94,7 +94,7 @@ pub struct ClientData {
 }
 
 impl ClientData {
-    pub fn new(full: ArenaFull, user_id: Option<UserId>, player: Option<Player>) -> ClientData {
+    pub fn new(full: ArenaFull, user_id: Option<UserId>) -> ClientData {
         ClientData {
             shared: full.shared,
             me: user_id.map(|uid| ClientMe {
