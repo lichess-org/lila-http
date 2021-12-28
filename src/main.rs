@@ -2,6 +2,7 @@ pub mod arena;
 pub mod error;
 pub mod mongo;
 pub mod opt;
+pub mod redis;
 pub mod repo;
 
 use crate::error::Error;
@@ -33,7 +34,9 @@ async fn main() {
     dbg!(&opt);
 
     let repo = Arc::new(Repo::new(opt.clone()));
-    let mongo = mongo::Mongo::new(opt.clone());
+    // let mongo = mongo::Mongo::new(opt.clone());
+    // let redis = redis::Redis::new(opt.clone()).await.unwrap();
+    redis::subscribe(opt.clone()).unwrap();
 
     let app = Router::new()
         .route("/", get(root))

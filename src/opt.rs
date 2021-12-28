@@ -21,4 +21,6 @@ pub struct Opt {
     pub mongo_url: String,
     #[clap(long = "mongo_db_name", default_value = "lichess")]
     pub mongo_db_name: String,
+    #[clap(long = "redis_url", default_value = "redis://localhost")]
+    pub redis_url: String,
 }
