@@ -80,5 +80,5 @@ async fn arena(
 }
 
 async fn root() -> &'static str {
-    "lilarena"
+    "lila-http"
 }
