@@ -52,8 +52,10 @@ pub struct ArenaFull {
     #[serde(flatten)]
     shared: ArenaShared,
     ongoing_user_games: HashMap<UserId, GameId>,
+    // this duplicates info gotten from standing, remove
     #[serde_as(as = "FromInto<String>")]
     ranking: FullRanking,
+    standing: Vec<JsValue>,
 }
 
 #[derive(Debug, Clone)]
@@ -87,15 +89,23 @@ struct ClientMe {
 }
 
 #[derive(Debug, Clone, Serialize)]
+struct ClientStanding<'p> {
+    page: u32,
+    players: &'p [JsValue],
+}
+
+#[derive(Debug, Clone, Serialize)]
 pub struct ClientData<'a> {
     #[serde(flatten)]
     shared: &'a ArenaShared,
     #[serde(skip_serializing_if = "Option::is_none")]
     me: Option<ClientMe>,
+    standing: ClientStanding<'a>,
 }
 
 impl<'a> ClientData<'a> {
     pub fn new<'b>(full: &'b Arc<ArenaFull>, user_id: Option<UserId>) -> ClientData<'b> {
+        let page = 1;
         ClientData {
             shared: &full.shared,
             me: user_id.map(|uid| ClientMe {
@@ -104,6 +114,10 @@ impl<'a> ClientData<'a> {
                 game_id: full.ongoing_user_games.get(&uid).cloned(),
                 pause_delay: None,
             }),
+            standing: ClientStanding {
+                page: 1,
+                players: &full.standing[((page - 1) * 10)..(page * 10 - 1)],
+            },
         }
     }
 }
