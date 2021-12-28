@@ -2,7 +2,6 @@ use crate::arena::ArenaFull;
 use crate::repo::Repo;
 use futures::stream::StreamExt;
 use log::error;
-use std::error::{Error as StdError};
 use std::sync::Arc;
 use redis::RedisError;
 use thiserror::{Error as ThisError};
@@ -28,10 +27,10 @@ pub fn subscribe(opt: crate::opt::Opt, repo: Arc<Repo>) -> Result<(), Error> {
         pubsub.subscribe("http-out").await.unwrap();
         let mut stream = pubsub.on_message();
         while let Some(msg) = stream.next().await {
-            match parse_message(&msg) {
-                Err(err) => error!("{:?}", err.to_string()),
-                Ok(full) => repo.put(full).await,
-            };
+            parse_message(&msg)
+                .map_err(|e| error!("{:?}", e))
+                .and_then(|full| Ok(async { repo.put(full).await }))
+                .ok();
         }
     });
     Ok(())
