@@ -48,8 +48,8 @@ pub struct Rank(usize);
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ArenaFull {
-    #[serde(flatten)]
     pub id: ArenaId,
+    #[serde(flatten)]
     shared: ArenaShared,
     ongoing_user_games: HashMap<UserId, GameId>,
     #[serde_as(as = "FromInto<String>")]
