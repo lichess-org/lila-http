@@ -67,7 +67,7 @@ struct QueryParams {
     user_id: Option<UserId>,
 }
 
-async fn arena<'a>(
+async fn arena(
     Path(id): Path<ArenaId>,
     Query(query): Query<QueryParams>,
     Extension(repo): Extension<Arc<Repo>>,
