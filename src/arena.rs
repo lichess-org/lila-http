@@ -58,6 +58,19 @@ pub struct ArenaFull {
     standing: Vec<JsValue>,
 }
 
+impl ArenaFull {
+    fn user_from_id(&self, uid: &UserId) -> ClientMe {
+        ClientMe::new(
+            self.ranking.ranking.get(&uid),
+            self.ongoing_user_games.get(&uid)
+        )
+    }
+
+    fn standing_from_page(&self, page: usize) -> ClientStanding {
+        ClientStanding::new(&self.standing, page)
+    }
+}
+
 #[derive(Debug, Clone)]
 struct FullRanking {
     ranking: HashMap<UserId, Rank>,
@@ -88,10 +101,30 @@ struct ClientMe {
     pause_delay: Option<u32>,
 }
 
+impl ClientMe {
+    pub fn new(rank: Option<&Rank>, game_id: Option<&GameId>) -> ClientMe {
+        ClientMe {
+            rank: rank.cloned(),
+            withdraw: false,
+            game_id: game_id.cloned(),
+            pause_delay: None,
+        }
+    }
+}
+
 #[derive(Debug, Clone, Serialize)]
 struct ClientStanding<'p> {
     page: u32,
     players: &'p [JsValue],
+}
+
+impl<'a> ClientStanding<'a> {
+    pub fn new<'b>(full_standing: &'b Vec<JsValue>, page: usize) -> ClientStanding<'b> {
+        ClientStanding {
+            page: page as u32,
+            players: &full_standing[((page - 1) * 10)..(page * 10 - 1)],
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -108,16 +141,8 @@ impl<'a> ClientData<'a> {
         let page = 1;
         ClientData {
             shared: &full.shared,
-            me: user_id.map(|uid| ClientMe {
-                rank: full.ranking.ranking.get(&uid).cloned(),
-                withdraw: false, // todo!(),
-                game_id: full.ongoing_user_games.get(&uid).cloned(),
-                pause_delay: None,
-            }),
-            standing: ClientStanding {
-                page: 1,
-                players: &full.standing[((page - 1) * 10)..(page * 10 - 1)],
-            },
+            me: user_id.map(|uid| full.user_from_id(&uid)),
+            standing: full.standing_from_page(page)
         }
     }
 }
