@@ -24,3 +24,9 @@ impl Repo {
         self.cache.insert(full.id.clone(), Arc::new(full)).await
     }
 }
+
+impl Default for Repo {
+    fn default() -> Self {
+        Repo::new()
+    }
+}
