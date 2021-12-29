@@ -1,21 +1,22 @@
 pub mod arena;
+pub mod http;
 pub mod mongo;
 pub mod opt;
 pub mod redis;
 pub mod repo;
 
-use arena::{ArenaFull, ArenaId, ClientData, UserId};
+use arena::{ArenaId, ClientData, UserId};
 use axum::{
     extract::{Extension, Path, Query},
-    http::StatusCode,
     routing::get,
-    AddExtensionLayer, Json, Router,
+    AddExtensionLayer, Router,
 };
 use clap::Parser;
 use opt::Opt;
 use repo::Repo;
 use serde::Deserialize;
 use std::sync::Arc;
+use crate::http::{Json, not_found, HttpResponseError};
 
 #[tokio::main]
 async fn main() {
@@ -70,19 +71,14 @@ async fn arena(
     Path(id): Path<ArenaId>,
     Query(query): Query<QueryParams>,
     Extension(repo): Extension<Arc<Repo>>,
-) -> Result<String, StatusCode> {
-    match repo.get(id) {
-        None => Err(StatusCode::NOT_FOUND),
-        Some(full) =>
-        // here I'm calling to_string instead of returning Json<ClientData>
-        // because that caused lifetime issues :-/
-        // TODO set json content-type
-        {
-            Ok(serde_json::to_string(&ClientData::new(&full, query.user_id)).unwrap())
-        }
-    }
+) -> Result<Json, HttpResponseError> {
+    repo.get(id)
+        .ok_or(not_found())
+        .and_then(|full|
+            Json::from(&ClientData::new(&full, query.user_id))
+        )
 }
 
 async fn root() -> &'static str {
-    "lilarena"
+    "lila-http"
 }
