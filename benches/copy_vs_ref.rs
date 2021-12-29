@@ -4,7 +4,7 @@ use lila_http::{
     repo::Repo,
 };
 use serde::Serialize;
-use serde_json::{json, Value as JsValue};
+use serde_json::{json, to_string, Value as JsValue};
 use std::collections::HashMap;
 use std::sync::Arc;
 
@@ -42,12 +42,12 @@ impl<'a> ClientDataRef<'a> {
     }
 }
 
-fn no_ref(full: Arc<ArenaFull>, user_id: Option<UserId>) -> ClientData {
-    ClientData::new(full, user_id)
+fn no_ref(full: Arc<ArenaFull>, user_id: Option<UserId>) -> String {
+    to_string(&ClientData::new(full, user_id)).unwrap()
 }
 
-fn with_ref<'a>(full: &'a Arc<ArenaFull>, user_id: Option<UserId>) -> ClientDataRef<'a> {
-    ClientDataRef::new(full, user_id)
+fn with_ref(full: &Arc<ArenaFull>, user_id: Option<UserId>) -> String {
+    to_string(&ClientDataRef::new(full, user_id)).unwrap()
 }
 
 fn generate_arena(id: ArenaId) -> ArenaFull {
