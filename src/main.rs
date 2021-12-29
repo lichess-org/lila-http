@@ -5,19 +5,18 @@ pub mod opt;
 pub mod redis;
 pub mod repo;
 
+use crate::http::{not_found, HttpResponseError};
 use arena::{ArenaId, ClientData, UserId};
 use axum::{
     extract::{Extension, Path, Query},
     routing::get,
-    Json,
-    AddExtensionLayer, Router,
+    AddExtensionLayer, Json, Router,
 };
 use clap::Parser;
 use opt::Opt;
 use repo::Repo;
 use serde::Deserialize;
 use std::sync::Arc;
-use crate::http::{not_found, HttpResponseError};
 
 #[tokio::main]
 async fn main() {
@@ -74,7 +73,7 @@ async fn arena(
     Extension(repo): Extension<Arc<Repo>>,
 ) -> Result<Json<ClientData>, HttpResponseError> {
     repo.get(id)
-        .map(|full| Json(ClientData::new(full, query.user_id)))
+        .map(|full| Json(ClientData::new(1, full, query.user_id)))
         .ok_or_else(not_found)
 }
 

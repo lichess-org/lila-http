@@ -102,8 +102,7 @@ pub struct ClientData {
 }
 
 impl ClientData {
-    pub fn new(full: Arc<ArenaFull>, user_id: Option<UserId>) -> ClientData {
-        let page = 1;
+    pub fn new(page: usize, full: Arc<ArenaFull>, user_id: Option<UserId>) -> ClientData {
         ClientData {
             shared: Arc::clone(&full.shared),
             me: user_id.map(|uid| ClientMe {

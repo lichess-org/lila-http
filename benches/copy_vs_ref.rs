@@ -1,11 +1,12 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
-use lila_http::{
-    arena::{ArenaFull, ArenaId, ArenaShared, ClientData, ClientMe, FullRanking, UserId},
-    repo::Repo,
+use lila_http::arena::{
+    ArenaFull, ArenaId, ArenaShared, ClientData, ClientMe, FullRanking, UserId,
 };
 use serde::Serialize;
 use serde_json::{json, to_string, Value as JsValue};
 use std::collections::HashMap;
+use std::fs::File;
+use std::io::BufReader;
 use std::sync::Arc;
 
 #[derive(Debug, Clone, Serialize)]
@@ -24,8 +25,11 @@ pub struct ClientDataRef<'a> {
 }
 
 impl<'a> ClientDataRef<'a> {
-    pub fn new<'b>(full: &'b Arc<ArenaFull>, user_id: Option<UserId>) -> ClientDataRef<'b> {
-        let page = 50;
+    pub fn new<'b>(
+        page: usize,
+        full: &'b Arc<ArenaFull>,
+        user_id: Option<UserId>,
+    ) -> ClientDataRef<'b> {
         ClientDataRef {
             shared: &full.shared,
             me: user_id.map(|uid| ClientMe {
@@ -42,12 +46,12 @@ impl<'a> ClientDataRef<'a> {
     }
 }
 
-fn no_ref(full: Arc<ArenaFull>, user_id: Option<UserId>) -> String {
-    to_string(&ClientData::new(full, user_id)).unwrap()
+fn no_ref(full: Arc<ArenaFull>, user_id: Option<UserId>, page: usize) -> String {
+    to_string(&ClientData::new(page, full, user_id)).unwrap()
 }
 
-fn with_ref(full: &Arc<ArenaFull>, user_id: Option<UserId>) -> String {
-    to_string(&ClientDataRef::new(full, user_id)).unwrap()
+fn with_ref(full: &Arc<ArenaFull>, user_id: Option<UserId>, page: usize) -> String {
+    to_string(&ClientDataRef::new(page, full, user_id)).unwrap()
 }
 
 fn generate_arena(id: ArenaId) -> ArenaFull {
@@ -85,16 +89,27 @@ fn generate_arena(id: ArenaId) -> ArenaFull {
 }
 
 fn criterion_benchmark(c: &mut Criterion) {
-    let id = ArenaId("asdf".into());
     let user_id = Some(UserId("asdf".into()));
 
-    let full = Arc::new(generate_arena(id));
-    c.bench_function("no ref", |b| {
-        b.iter(|| no_ref(black_box(full.clone()), black_box(user_id.clone())))
-    });
-    c.bench_function("with ref", |b| {
-        b.iter(|| with_ref(black_box(&full), black_box(user_id.clone())))
-    });
+    let file = File::open("/home/lakin/Downloads/ArenaFull-marathon.json").unwrap();
+    let reader = BufReader::new(file);
+    let full: ArenaFull = serde_json::from_reader(reader).unwrap();
+
+    let full = Arc::new(full);
+    for i in 1..10 {
+        c.bench_function(format!("copy {}", i).as_str(), |b| {
+            b.iter(|| {
+                no_ref(
+                    black_box(full.clone()),
+                    black_box(user_id.clone()),
+                    black_box(i),
+                )
+            })
+        });
+        c.bench_function(format!("with ref {}", i).as_str(), |b| {
+            b.iter(|| with_ref(black_box(&full), black_box(user_id.clone()), black_box(i)))
+        });
+    }
 }
 
 criterion_group!(benches, criterion_benchmark);
