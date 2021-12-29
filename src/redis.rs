@@ -2,10 +2,10 @@ use crate::arena::ArenaFull;
 use crate::repo::Repo;
 use futures::stream::StreamExt;
 use log::error;
-use std::sync::Arc;
 use redis::RedisError;
-use thiserror::{Error as ThisError};
-use serde_json::{Error as SerdeJsonError};
+use serde_json::Error as SerdeJsonError;
+use std::sync::Arc;
+use thiserror::Error as ThisError;
 
 #[derive(ThisError, Debug)]
 pub enum Error {
@@ -29,7 +29,7 @@ pub fn subscribe(opt: crate::opt::Opt, repo: Arc<Repo>) -> Result<(), Error> {
         while let Some(msg) = stream.next().await {
             parse_message(&msg)
                 .map_err(|e| error!("{:?}", e))
-                .and_then(|full| Ok(async { repo.put(full).await }))
+                .map(|full| async { repo.put(full).await })
                 .ok();
         }
     });

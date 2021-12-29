@@ -65,14 +65,12 @@ struct FullRanking {
 
 impl From<String> for FullRanking {
     fn from(user_ids_comma_separated: String) -> Self {
-        let user_ids: Vec<UserId> = user_ids_comma_separated
-            .split(",")
+        let user_ids = user_ids_comma_separated
+            .split(',')
             .into_iter()
-            .map(|uid| UserId(uid.to_string()))
-            .collect();
+            .map(|uid| UserId(uid.to_string()));
         FullRanking {
             ranking: user_ids
-                .into_iter()
                 .enumerate()
                 .map(|(index, uid)| (uid, Rank(index + 1)))
                 .collect(),
@@ -116,7 +114,7 @@ impl ClientData {
             }),
             standing: ClientStanding {
                 page: 1,
-                players: full.standing[((page - 1) * 10)..(page * 10 - 1)].to_vec() // TODO: check bounds,
+                players: full.standing[((page - 1) * 10)..(page * 10 - 1)].to_vec(), // TODO: check bounds,
             },
         }
     }
