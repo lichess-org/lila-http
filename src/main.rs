@@ -37,7 +37,7 @@ async fn main() {
     let repo = Arc::new(Repo::new());
     // let mongo = mongo::Mongo::new(opt.clone());
     // let redis = redis::Redis::new(opt.clone()).await.unwrap();
-    redis::subscribe(opt.clone(), repo.clone()).unwrap();
+    redis::subscribe(opt.clone(), Arc::clone(&repo)).unwrap();
 
     let app = Router::new()
         .route("/", get(root))
