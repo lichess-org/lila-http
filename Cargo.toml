@@ -26,3 +26,10 @@ serde_with = "1.11.0"
 thiserror = "1.0.30"
 tokio = { version = "1", features = ["full"] }
 tower-http = { version = "0.2", features = ["set-header"] }
+
+[dev-dependencies]
+criterion = { version = "0.3", features = ["async_tokio"] }
+
+[[bench]]
+name = "copy_vs_ref"
+harness = false

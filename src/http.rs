@@ -1,8 +1,9 @@
 use axum::{
-    body, http::StatusCode,
+    body,
+    http::StatusCode,
     response::{IntoResponse, Response},
 };
-use thiserror::{Error as ThisError};
+use thiserror::Error as ThisError;
 
 #[derive(ThisError, Debug)]
 pub enum HttpResponseError {
@@ -17,7 +18,6 @@ impl IntoResponse for HttpResponseError {
                 .status(sc)
                 .body(body::boxed(body::Full::from(sc.to_string())))
                 .unwrap(),
-
         }
     }
 }

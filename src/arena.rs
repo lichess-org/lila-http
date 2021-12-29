@@ -11,30 +11,30 @@ pub struct ArenaId(pub String);
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ArenaShared {
-    nb_players: u32,
-    duels: JsValue,
+    pub nb_players: u32,
+    pub duels: JsValue,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    seconds_to_finish: Option<u32>,
+    pub seconds_to_finish: Option<u32>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    seconds_to_start: Option<u32>,
+    pub seconds_to_start: Option<u32>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    is_started: Option<bool>,
+    pub is_started: Option<bool>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    is_finished: Option<bool>,
+    pub is_finished: Option<bool>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    is_recently_finished: Option<bool>,
+    pub is_recently_finished: Option<bool>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    featured: Option<JsValue>,
+    pub featured: Option<JsValue>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    podium: Option<JsValue>,
+    pub podium: Option<JsValue>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pairings_closed: Option<bool>,
+    pub pairings_closed: Option<bool>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    stats: Option<JsValue>,
+    pub stats: Option<JsValue>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    team_standing: Option<JsValue>,
+    pub team_standing: Option<JsValue>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    duel_teams: Option<JsValue>,
+    pub duel_teams: Option<JsValue>,
 }
 
 #[derive(Debug, Clone, Deserialize, Eq, PartialEq, Hash)]
@@ -50,17 +50,17 @@ pub struct Rank(usize);
 pub struct ArenaFull {
     pub id: ArenaId,
     #[serde(flatten)]
-    shared: Arc<ArenaShared>,
-    ongoing_user_games: HashMap<UserId, GameId>,
+    pub shared: Arc<ArenaShared>,
+    pub ongoing_user_games: HashMap<UserId, GameId>,
     // this duplicates info gotten from standing, remove
     #[serde_as(as = "FromInto<String>")]
-    ranking: FullRanking,
-    standing: Vec<JsValue>,
+    pub ranking: FullRanking,
+    pub standing: Vec<JsValue>,
 }
 
 #[derive(Debug, Clone)]
-struct FullRanking {
-    ranking: HashMap<UserId, Rank>,
+pub struct FullRanking {
+    pub ranking: HashMap<UserId, Rank>,
 }
 
 impl From<String> for FullRanking {
@@ -79,15 +79,15 @@ impl From<String> for FullRanking {
 }
 
 #[derive(Debug, Clone, Serialize)]
-struct ClientMe {
-    rank: Option<Rank>,
-    withdraw: bool,
-    game_id: Option<GameId>,
-    pause_delay: Option<u32>,
+pub struct ClientMe {
+    pub rank: Option<Rank>,
+    pub withdraw: bool,
+    pub game_id: Option<GameId>,
+    pub pause_delay: Option<u32>,
 }
 
 #[derive(Debug, Clone, Serialize)]
-struct ClientStanding {
+pub struct ClientStanding {
     page: u32,
     players: Vec<JsValue>,
 }
