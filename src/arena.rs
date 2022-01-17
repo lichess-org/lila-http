@@ -110,7 +110,7 @@ impl From<String> for OngoingUserGames {
                     let (players, game) = enc.split_once("/").unwrap();
                     let (p1, p2) = players.split_once("&").unwrap();
                     let game_id = GameId(game.to_string());
-                    vec![
+                    [
                         (UserId(p1.to_string()), game_id.clone()),
                         (UserId(p2.to_string()), game_id),
                     ]
