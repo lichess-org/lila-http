@@ -1,6 +1,5 @@
 use serde::{Deserialize, Serialize};
 
-
 use serde_json::Value as JsValue;
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -40,7 +39,7 @@ pub struct ArenaShared {
 
 #[derive(Debug, Clone, Deserialize, Eq, PartialEq, Hash)]
 pub struct UserId(pub String);
-#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, Hash)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UserName(pub String);
 impl UserName {
     pub fn to_id(&self) -> UserId {
