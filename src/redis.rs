@@ -1,6 +1,6 @@
 use crate::arena::{
-    ArenaFull, ArenaId, ArenaShared, FullRanking, GameId, Player, Rank, Sheet, SheetScores, UserId,
-    UserName,
+    ArenaFull, ArenaId, ArenaShared, FullRanking, OngoingUserGames, Player, Rank, Sheet,
+    SheetScores, UserId, UserName,
 };
 use crate::repo::Repo;
 use futures::stream::StreamExt;
@@ -9,8 +9,8 @@ use redis::RedisError;
 use serde::Deserialize;
 use serde_json::Error as SerdeJsonError;
 use serde_json::Value as JsValue;
-use serde_with::serde_as;
-use std::collections::{HashMap, HashSet};
+use serde_with::{serde_as, FromInto};
+use std::collections::HashSet;
 use std::sync::Arc;
 use thiserror::Error as ThisError;
 
@@ -79,7 +79,8 @@ pub struct ArenaFullRedis {
     pub id: ArenaId,
     #[serde(flatten)]
     pub shared: Arc<ArenaShared>,
-    pub ongoing_user_games: HashMap<UserId, GameId>,
+    #[serde_as(as = "FromInto<String>")]
+    pub ongoing_user_games: OngoingUserGames,
     pub standing: Vec<PlayerRedis>,
 }
 

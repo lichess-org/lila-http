@@ -54,7 +54,7 @@ pub struct Rank(pub usize);
 pub struct ArenaFull {
     pub id: ArenaId,
     pub shared: Arc<ArenaShared>,
-    pub ongoing_user_games: HashMap<UserId, GameId>,
+    pub ongoing_user_games: OngoingUserGames,
     pub standing: Vec<Player>,
     pub ranking: FullRanking,
     pub withdrawn: HashSet<UserId>,
@@ -64,6 +64,7 @@ pub struct ArenaFull {
 pub struct FullRanking(pub HashMap<UserId, Rank>);
 
 #[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
 struct ClientMe {
     rank: Option<Rank>,
     withdraw: bool,
@@ -96,6 +97,29 @@ pub struct Sheet {
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct SheetScores(String);
 
+#[derive(Clone, Debug)]
+pub struct OngoingUserGames(HashMap<UserId, GameId>);
+
+impl From<String> for OngoingUserGames {
+    fn from(encoded: String) -> Self {
+        OngoingUserGames(
+            encoded
+                .split(',')
+                .filter(|line| !line.is_empty())
+                .flat_map(|enc| {
+                    let (players, game) = enc.split_once("/").unwrap();
+                    let (p1, p2) = players.split_once("&").unwrap();
+                    let game_id = GameId(game.to_string());
+                    vec![
+                        (UserId(p1.to_string()), game_id.clone()),
+                        (UserId(p2.to_string()), game_id),
+                    ]
+                })
+                .collect(),
+        )
+    }
+}
+
 #[derive(Debug, Clone, Serialize)]
 struct ClientStanding {
     page: u32,
@@ -103,6 +127,7 @@ struct ClientStanding {
 }
 
 #[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ClientData {
     #[serde(flatten)]
     shared: Arc<ArenaShared>,
@@ -120,7 +145,7 @@ impl ClientData {
             me: user_id.map(|uid| ClientMe {
                 rank: full.ranking.0.get(&uid).cloned(),
                 withdraw: full.withdrawn.contains(&uid),
-                game_id: full.ongoing_user_games.get(&uid).cloned(),
+                game_id: full.ongoing_user_games.0.get(&uid).cloned(),
                 pause_delay: None,
             }),
             standing: ClientStanding {
