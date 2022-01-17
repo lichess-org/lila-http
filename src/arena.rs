@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use serde_json::Value as JsValue;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 
 #[derive(Debug, Eq, PartialEq, Deserialize, Hash, Clone)]
@@ -57,6 +57,7 @@ pub struct ArenaFull {
     pub ongoing_user_games: HashMap<UserId, GameId>,
     pub standing: Vec<Player>,
     pub ranking: FullRanking,
+    pub withdrawn: HashSet<UserId>,
 }
 
 #[derive(Debug, Clone)]
@@ -70,12 +71,30 @@ struct ClientMe {
     pause_delay: Option<u32>,
 }
 
+fn is_false(b: &bool) -> bool {
+    !b
+}
+
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct Player {
     pub name: UserName,
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub withdraw: bool,
+    pub sheet: Sheet,
+    pub rank: usize,
     #[serde(flatten)]
-    rest: JsValue,
+    pub rest: JsValue,
 }
+
+#[derive(Deserialize, Serialize, Clone, Debug)]
+pub struct Sheet {
+    pub scores: SheetScores,
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub fire: bool,
+}
+
+#[derive(Deserialize, Serialize, Clone, Debug)]
+pub struct SheetScores(String);
 
 #[derive(Debug, Clone, Serialize)]
 struct ClientStanding {
@@ -98,13 +117,11 @@ impl ClientData {
         let players = full.standing.chunks(10).nth(page - 1).unwrap_or_default();
         ClientData {
             shared: Arc::clone(&full.shared),
-            me: user_id.map(|uid| {
-                ClientMe {
-                    rank: full.ranking.0.get(&uid).cloned(),
-                    withdraw: false, // todo!(),
-                    game_id: full.ongoing_user_games.get(&uid).cloned(),
-                    pause_delay: None,
-                }
+            me: user_id.map(|uid| ClientMe {
+                rank: full.ranking.0.get(&uid).cloned(),
+                withdraw: full.withdrawn.contains(&uid),
+                game_id: full.ongoing_user_games.get(&uid).cloned(),
+                pause_delay: None,
             }),
             standing: ClientStanding {
                 page: 1,
