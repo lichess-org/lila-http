@@ -104,6 +104,7 @@ pub struct ClientData {
 impl ClientData {
     pub fn new(full: Arc<ArenaFull>, user_id: Option<UserId>) -> ClientData {
         let page = 1;
+        let players = full.standing.chunks(10).nth(page - 1).unwrap_or_default();
         ClientData {
             shared: Arc::clone(&full.shared),
             me: user_id.map(|uid| ClientMe {
@@ -114,7 +115,7 @@ impl ClientData {
             }),
             standing: ClientStanding {
                 page: 1,
-                players: full.standing[((page - 1) * 10)..(page * 10 - 1)].to_vec(), // TODO: check bounds,
+                players: players.to_vec(),
             },
         }
     }
