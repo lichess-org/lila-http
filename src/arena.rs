@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
+
+
 use serde_json::Value as JsValue;
-use serde_with::{serde_as, FromInto};
 use std::collections::HashMap;
 use std::sync::Arc;
 
@@ -39,44 +40,28 @@ pub struct ArenaShared {
 
 #[derive(Debug, Clone, Deserialize, Eq, PartialEq, Hash)]
 pub struct UserId(pub String);
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, Hash)]
+pub struct UserName(pub String);
+impl UserName {
+    pub fn to_id(&self) -> UserId {
+        UserId(self.0.to_lowercase())
+    }
+}
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct GameId(String);
 #[derive(Debug, Clone, Deserialize, Serialize)]
-pub struct Rank(usize);
+pub struct Rank(pub usize);
 
-#[serde_as]
-#[derive(Debug, Clone, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct ArenaFull {
     pub id: ArenaId,
-    #[serde(flatten)]
-    shared: Arc<ArenaShared>,
-    ongoing_user_games: HashMap<UserId, GameId>,
-    // this duplicates info gotten from standing, remove
-    #[serde_as(as = "FromInto<String>")]
-    ranking: FullRanking,
-    standing: Vec<JsValue>,
+    pub shared: Arc<ArenaShared>,
+    pub ongoing_user_games: HashMap<UserId, GameId>,
+    pub standing: Vec<Player>,
+    pub ranking: FullRanking,
 }
 
 #[derive(Debug, Clone)]
-struct FullRanking {
-    ranking: HashMap<UserId, Rank>,
-}
-
-impl From<String> for FullRanking {
-    fn from(user_ids_comma_separated: String) -> Self {
-        let user_ids = user_ids_comma_separated
-            .split(',')
-            .into_iter()
-            .map(|uid| UserId(uid.to_string()));
-        FullRanking {
-            ranking: user_ids
-                .enumerate()
-                .map(|(index, uid)| (uid, Rank(index + 1)))
-                .collect(),
-        }
-    }
-}
+pub struct FullRanking(pub HashMap<UserId, Rank>);
 
 #[derive(Debug, Clone, Serialize)]
 struct ClientMe {
@@ -86,10 +71,17 @@ struct ClientMe {
     pause_delay: Option<u32>,
 }
 
+#[derive(Deserialize, Serialize, Clone, Debug)]
+pub struct Player {
+    pub name: UserName,
+    #[serde(flatten)]
+    rest: JsValue,
+}
+
 #[derive(Debug, Clone, Serialize)]
 struct ClientStanding {
     page: u32,
-    players: Vec<JsValue>,
+    players: Vec<Player>,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -107,11 +99,13 @@ impl ClientData {
         let players = full.standing.chunks(10).nth(page - 1).unwrap_or_default();
         ClientData {
             shared: Arc::clone(&full.shared),
-            me: user_id.map(|uid| ClientMe {
-                rank: full.ranking.ranking.get(&uid).cloned(),
-                withdraw: false, // todo!(),
-                game_id: full.ongoing_user_games.get(&uid).cloned(),
-                pause_delay: None,
+            me: user_id.map(|uid| {
+                ClientMe {
+                    rank: full.ranking.0.get(&uid).cloned(),
+                    withdraw: false, // todo!(),
+                    game_id: full.ongoing_user_games.get(&uid).cloned(),
+                    pause_delay: None,
+                }
             }),
             standing: ClientStanding {
                 page: 1,

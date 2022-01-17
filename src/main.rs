@@ -7,7 +7,7 @@ pub mod redis;
 pub mod repo;
 
 use crate::http::{not_found, HttpResponseError};
-use arena::{ArenaId, ClientData, UserId};
+use arena::{ArenaId, ClientData, UserName};
 use axum::{
     extract::{Extension, Path, Query},
     routing::get,
@@ -65,7 +65,7 @@ async fn main() {
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct QueryParams {
-    user_id: Option<UserId>,
+    me: Option<UserName>,
 }
 
 async fn arena(
@@ -74,7 +74,7 @@ async fn arena(
     Extension(repo): Extension<Arc<Repo>>,
 ) -> Result<Json<ClientData>, HttpResponseError> {
     repo.get(id)
-        .map(|full| Json(ClientData::new(full, query.user_id)))
+        .map(|full| Json(ClientData::new(full, query.me.map(|n| n.to_id()))))
         .ok_or_else(not_found)
 }
 
