@@ -1,23 +1,23 @@
 pub mod arena;
+
 pub mod http;
 pub mod mongo;
 pub mod opt;
 pub mod redis;
 pub mod repo;
 
+use crate::http::{not_found, HttpResponseError};
 use arena::{ArenaId, ClientData, UserId};
 use axum::{
     extract::{Extension, Path, Query},
     routing::get,
-    Json,
-    AddExtensionLayer, Router,
+    AddExtensionLayer, Json, Router,
 };
 use clap::Parser;
 use opt::Opt;
 use repo::Repo;
 use serde::Deserialize;
 use std::sync::Arc;
-use crate::http::{not_found, HttpResponseError};
 
 #[tokio::main]
 async fn main() {

@@ -16,7 +16,9 @@ pub enum Error {
 }
 
 pub fn parse_message(msg: &redis::Msg) -> Result<ArenaFull, Error> {
-    Ok(serde_json::from_str(&msg.get_payload::<String>()?)?)
+    let str = &msg.get_payload::<String>()?;
+    let res = serde_json::from_str(str)?;
+    Ok(res)
 }
 
 pub fn subscribe(opt: crate::opt::Opt, repo: Arc<Repo>) -> Result<(), Error> {
@@ -27,10 +29,10 @@ pub fn subscribe(opt: crate::opt::Opt, repo: Arc<Repo>) -> Result<(), Error> {
         pubsub.subscribe("http-out").await.unwrap();
         let mut stream = pubsub.on_message();
         while let Some(msg) = stream.next().await {
-            parse_message(&msg)
-                .map_err(|e| error!("{:?}", e))
-                .map(|full| async { repo.put(full).await })
-                .ok();
+            match parse_message(&msg) {
+                Ok(full) => repo.put(full).await,
+                Err(msg) => error!("{:?}", dbg!(msg)),
+            }
         }
     });
     Ok(())
