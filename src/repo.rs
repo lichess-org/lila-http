@@ -11,7 +11,7 @@ impl Repo {
     pub fn new() -> Repo {
         Repo {
             cache: CacheBuilder::new(4096) // lots of ongoing tournaments (usermade)
-                .time_to_live(Duration::from_secs(60))
+                .time_to_live(Duration::from_secs(15))
                 .build(),
         }
     }
