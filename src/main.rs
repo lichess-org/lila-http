@@ -6,8 +6,6 @@ pub mod opt;
 pub mod redis;
 pub mod repo;
 
-use std::sync::Arc;
-
 use arena::{ArenaId, ClientData, UserName};
 use axum::{
     extract::{Extension, Path, Query},
@@ -35,8 +33,8 @@ async fn main() {
 
     let opt = dbg!(Opt::parse());
 
-    let repo = Arc::new(Repo::new());
-    redis::subscribe(opt.clone(), Arc::clone(&repo)).unwrap();
+    let repo: &'static Repo = Box::leak(Box::new(Repo::new()));
+    redis::subscribe(opt.clone(), repo).unwrap();
 
     let app = Router::new()
         .route("/", get(root))
@@ -70,7 +68,7 @@ struct QueryParams {
 async fn arena(
     Path(id): Path<ArenaId>,
     Query(query): Query<QueryParams>,
-    Extension(repo): Extension<Arc<Repo>>,
+    Extension(repo): Extension<&'static Repo>,
 ) -> Result<Json<ClientData>, HttpResponseError> {
     let user_id = query.me.map(|n| n.to_id());
     let page = query.page;

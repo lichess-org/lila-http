@@ -10,6 +10,7 @@ use serde::Deserialize;
 use serde_json::{Error as SerdeJsonError, Value as JsValue};
 use serde_with::{serde_as, FromInto};
 use thiserror::Error as ThisError;
+use crate::opt::Opt;
 
 use crate::{
     arena::{
@@ -33,7 +34,7 @@ pub fn parse_message(msg: &redis::Msg) -> Result<ArenaFullRedis, Error> {
     Ok(res)
 }
 
-pub fn subscribe(opt: crate::opt::Opt, repo: Arc<Repo>) -> Result<(), Error> {
+pub fn subscribe(opt: Opt, repo: &'static Repo) -> Result<(), Error> {
     let _ = tokio::spawn(async move {
         let client = redis::Client::open(opt.redis_url).unwrap();
         let subscribe_con = client.get_tokio_connection().await.unwrap();
