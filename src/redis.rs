@@ -71,6 +71,8 @@ impl PlayerRedis {
 #[serde(rename_all = "camelCase")]
 struct ArenaFullRedis {
     pub id: ArenaId,
+    // TODO: Can probably remove Arc here, and just let ClientData borrow.
+    // Can also disable rc feature for serde, when this is done.
     #[serde(flatten)]
     pub shared: Arc<ArenaShared>,
     #[serde_as(as = "FromInto<String>")]
