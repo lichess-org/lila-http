@@ -16,6 +16,7 @@ use clap::Parser;
 use opt::Opt;
 use repo::Repo;
 use serde::Deserialize;
+use axum::response::{Response, IntoResponse};
 
 #[tokio::main]
 async fn main() {
@@ -69,11 +70,11 @@ async fn arena(
     Path(id): Path<ArenaId>,
     Query(query): Query<QueryParams>,
     Extension(repo): Extension<&'static Repo>,
-) -> Result<Json<ClientData>, StatusCode> {
+) -> Result<Response, StatusCode> {
     let user_id = query.me.map(|n| n.to_id());
     let page = query.page;
     repo.get(id)
-        .map(|full| Json(ClientData::new(full, page, user_id.as_ref())))
+        .map(|full| Json(ClientData::new(&full, page, user_id.as_ref())).into_response())
         .ok_or(StatusCode::NOT_FOUND)
 }
 

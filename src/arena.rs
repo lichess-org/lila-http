@@ -150,7 +150,7 @@ struct ClientStanding {
 
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct ClientData {
+pub struct ClientData<'a> {
     #[serde(flatten)]
     shared: Arc<ArenaShared>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -160,14 +160,16 @@ pub struct ClientData {
     team_standing: Option<Vec<Team>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     my_team: Option<Team>, // only for large battles, if not included in `team_standing`
+    #[serde(skip)]
+    _todo_remove_this: &'a (),
 }
 
-impl ClientData {
-    pub fn new(
-        full: Arc<ArenaFull>,
+impl ClientData<'_> {
+    pub fn new<'a>(
+        full: &'a ArenaFull,
         req_page: Option<usize>,
         user_id: Option<&UserId>,
-    ) -> ClientData {
+    ) -> ClientData<'a> {
         let me = user_id.and_then(|uid| {
             full.player_map.get(uid).map(|player| ClientMe {
                 rank: player.rank,
@@ -197,6 +199,7 @@ impl ClientData {
                 .as_ref()
                 .map(|teams| teams.0.iter().take(10).cloned().collect()),
             my_team: user_id.and_then(|uid| ClientData::get_my_team_if_not_included(&full, uid)),
+            _todo_remove_this: &(),
         }
     }
 
