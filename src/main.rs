@@ -1,7 +1,6 @@
 #![forbid(unsafe_code)]
 
 pub mod arena;
-pub mod http;
 pub mod opt;
 pub mod redis;
 pub mod repo;
@@ -9,6 +8,7 @@ pub mod repo;
 use arena::{ArenaId, ClientData, UserName};
 use axum::{
     extract::{Extension, Path, Query},
+    http::StatusCode,
     routing::get,
     AddExtensionLayer, Json, Router,
 };
@@ -16,8 +16,6 @@ use clap::Parser;
 use opt::Opt;
 use repo::Repo;
 use serde::Deserialize;
-
-use crate::http::{not_found, HttpResponseError};
 
 #[tokio::main]
 async fn main() {
@@ -69,12 +67,12 @@ async fn arena(
     Path(id): Path<ArenaId>,
     Query(query): Query<QueryParams>,
     Extension(repo): Extension<&'static Repo>,
-) -> Result<Json<ClientData>, HttpResponseError> {
+) -> Result<Json<ClientData>, StatusCode> {
     let user_id = query.me.map(|n| n.to_id());
     let page = query.page;
     repo.get(id)
         .map(|full| Json(ClientData::new(full, page, user_id)))
-        .ok_or_else(not_found)
+        .ok_or(StatusCode::NOT_FOUND)
 }
 
 async fn root() -> &'static str {
