@@ -70,7 +70,7 @@ async fn arena(
     let user_id = query.me.map(|n| n.to_id());
     let page = query.page;
     repo.get(id)
-        .map(|full| Json(ClientData::new(full, page, user_id)))
+        .map(|full| Json(ClientData::new(full, page, user_id.as_ref())))
         .ok_or(StatusCode::NOT_FOUND)
 }
 

@@ -160,9 +160,9 @@ impl ClientData {
     pub fn new(
         full: Arc<ArenaFull>,
         req_page: Option<usize>,
-        user_id: Option<UserId>,
+        user_id: Option<&UserId>,
     ) -> ClientData {
-        let me = user_id.as_ref().and_then(|uid| {
+        let me = user_id.and_then(|uid| {
             full.player_map.get(uid).map(|player| ClientMe {
                 rank: player.rank,
                 withdraw: full.withdrawn.contains(uid),
@@ -190,12 +190,12 @@ impl ClientData {
                 .team_standing
                 .as_ref()
                 .map(|teams| teams.0.iter().take(10).cloned().collect()),
-            my_team: user_id.and_then(|uid| ClientData::get_my_team_if_not_included(full, uid)),
+            my_team: user_id.and_then(|uid| ClientData::get_my_team_if_not_included(&full, uid)),
         }
     }
 
-    fn get_my_team_if_not_included(full: Arc<ArenaFull>, user_id: UserId) -> Option<Team> {
-        let player = full.player_map.get(&user_id)?;
+    fn get_my_team_if_not_included(full: &ArenaFull, user_id: &UserId) -> Option<Team> {
+        let player = full.player_map.get(user_id)?;
         let team_id = player.team.as_ref()?;
         let big_standing = full
             .team_standing
