@@ -37,7 +37,6 @@ async fn main() {
     let app = Router::new()
         .route("/", get(root))
         .route("/:id", get(arena))
-        .layer(AddExtensionLayer::new(opt.clone()))
         .layer(AddExtensionLayer::new(repo));
 
     let app = if opt.no_cors {
