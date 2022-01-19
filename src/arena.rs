@@ -72,7 +72,7 @@ pub struct ArenaFull {
     pub shared: Arc<ArenaShared>,
     pub ongoing_user_games: OngoingUserGames,
     pub player_vec: Vec<Player>,
-    pub player_map: HashMap<UserId, Player>,
+    pub player_map: HashMap<UserId, PlayerMapEntry>,
     pub withdrawn: HashSet<UserId>,
     pub team_standing: Option<TeamStanding>,
 }
@@ -101,6 +101,12 @@ pub struct Player {
     pub team: Option<TeamId>,
     #[serde(flatten)]
     pub rest: JsValue,
+}
+
+#[derive(Debug)]
+pub struct PlayerMapEntry {
+    pub rank: Rank,
+    pub team: Option<TeamId>,
 }
 
 #[derive(Deserialize, Serialize, Clone, Debug)]

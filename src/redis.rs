@@ -13,8 +13,8 @@ use thiserror::Error as ThisError;
 
 use crate::{
     arena::{
-        ArenaFull, ArenaId, ArenaShared, OngoingUserGames, Player, Rank, Sheet, SheetScores,
-        TeamId, TeamStanding, UserId, UserName,
+        ArenaFull, ArenaId, ArenaShared, OngoingUserGames, Player, PlayerMapEntry, Rank, Sheet,
+        SheetScores, TeamId, TeamStanding, UserId, UserName,
     },
     opt::RedisOpt,
     repo::Repo,
@@ -112,10 +112,18 @@ impl ArenaFullRedis {
     }
 }
 
-fn make_player_map(standing: &[Player]) -> HashMap<UserId, Player> {
+fn make_player_map(standing: &[Player]) -> HashMap<UserId, PlayerMapEntry> {
     standing
         .iter()
-        .map(|player| (player.name.to_id(), player.clone()))
+        .map(|player| {
+            (
+                player.name.to_id(),
+                PlayerMapEntry {
+                    rank: player.rank,
+                    team: player.team.clone(),
+                },
+            )
+        })
         .collect()
 }
 
