@@ -5,11 +5,9 @@ use std::{
 
 use futures::stream::StreamExt;
 use log::error;
-use redis::RedisError;
 use serde::Deserialize;
 use serde_json::{Error as SerdeJsonError, Value as JsValue};
 use serde_with::{serde_as, FromInto};
-use thiserror::Error as ThisError;
 
 use crate::{
     arena::{
@@ -20,18 +18,8 @@ use crate::{
     repo::Repo,
 };
 
-#[derive(ThisError, Debug)]
-enum Error {
-    #[error("[REDIS] Error getting payload: {0}")]
-    RedisError(#[from] RedisError),
-    #[error("[SERDE] Error parsing JSON: {0}")]
-    SerdeJsonError(#[from] SerdeJsonError),
-}
-
-fn parse_message(msg: &redis::Msg) -> Result<ArenaFullRedis, Error> {
-    let s = &msg.get_payload::<String>()?;
-    let res = serde_json::from_str(s)?;
-    Ok(res)
+fn parse_message(msg: &redis::Msg) -> Result<ArenaFullRedis, SerdeJsonError> {
+    serde_json::from_slice(msg.get_payload_bytes())
 }
 
 pub async fn subscribe(opt: RedisOpt, repo: &'static Repo) {
