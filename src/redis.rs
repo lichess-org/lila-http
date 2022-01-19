@@ -29,8 +29,8 @@ enum Error {
 }
 
 fn parse_message(msg: &redis::Msg) -> Result<ArenaFullRedis, Error> {
-    let str = &msg.get_payload::<String>()?;
-    let res = serde_json::from_str(str)?;
+    let s = &msg.get_payload::<String>()?;
+    let res = serde_json::from_str(s)?;
     Ok(res)
 }
 
