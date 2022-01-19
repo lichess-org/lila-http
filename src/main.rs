@@ -1,3 +1,5 @@
+#![forbid(unsafe_code)]
+
 pub mod arena;
 pub mod http;
 pub mod opt;
