@@ -12,6 +12,7 @@ categories = ["games"]
 keywords = ["chess", "lichess"]
 
 [dependencies]
+arrayvec = { version = "0.7.2", features = ["serde"] }
 axum = "0.4"
 clap = { version = "3.0.0-rc.4", features = ["derive"] }
 env_logger = "0.9"

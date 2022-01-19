@@ -2,12 +2,13 @@ use std::{
     collections::{HashMap, HashSet},
     sync::Arc,
 };
+use arrayvec::ArrayString;
 
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsValue;
 
-#[derive(Debug, Eq, PartialEq, Deserialize, Hash, Clone)]
-pub struct ArenaId(pub String);
+#[derive(Debug, Eq, PartialEq, Deserialize, Hash, Copy, Clone)]
+pub struct ArenaId(pub ArrayString<8>);
 
 // naming is hard
 #[derive(Debug, Deserialize, Serialize)]
@@ -58,8 +59,8 @@ impl UserName {
         UserId(self.0.to_lowercase())
     }
 }
-#[derive(Debug, Clone, Deserialize, Serialize)]
-pub struct GameId(String);
+#[derive(Debug, Copy, Clone, Deserialize, Serialize)]
+pub struct GameId(ArrayString<8>);
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
 pub struct TeamId(String);
 #[derive(Debug, Copy, Clone, Deserialize, Serialize)]
@@ -124,9 +125,9 @@ impl From<String> for OngoingUserGames {
                 .flat_map(|enc| {
                     let (players, game) = enc.split_once('/').unwrap();
                     let (p1, p2) = players.split_once('&').unwrap();
-                    let game_id = GameId(game.to_string());
+                    let game_id = GameId(ArrayString::from(game).unwrap());
                     [
-                        (UserId(p1.to_string()), game_id.clone()),
+                        (UserId(p1.to_string()), game_id),
                         (UserId(p2.to_string()), game_id),
                     ]
                 })
