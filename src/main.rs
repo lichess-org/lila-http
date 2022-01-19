@@ -1,7 +1,6 @@
 pub mod arena;
 
 pub mod http;
-pub mod mongo;
 pub mod opt;
 pub mod redis;
 pub mod repo;
@@ -35,8 +34,6 @@ async fn main() {
     dbg!(&opt);
 
     let repo = Arc::new(Repo::new());
-    // let mongo = mongo::Mongo::new(opt.clone());
-    // let redis = redis::Redis::new(opt.clone()).await.unwrap();
     redis::subscribe(opt.clone(), Arc::clone(&repo)).unwrap();
 
     let app = Router::new()
