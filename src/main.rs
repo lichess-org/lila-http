@@ -32,7 +32,10 @@ async fn main() {
     let opt = dbg!(Opt::parse());
 
     let repo: &'static Repo = Box::leak(Box::new(Repo::new()));
-    redis::subscribe(opt.clone(), repo).unwrap();
+
+    tokio::spawn(async move {
+        redis::subscribe(opt.redis, repo).await;
+    });
 
     let app = Router::new()
         .route("/", get(root))

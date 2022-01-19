@@ -2,8 +2,8 @@ use std::{
     collections::{HashMap, HashSet},
     sync::Arc,
 };
-use arrayvec::ArrayString;
 
+use arrayvec::ArrayString;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsValue;
 
