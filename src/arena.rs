@@ -174,7 +174,7 @@ impl ClientData<'_> {
             full.player_map.get(uid).map(|player| ClientMe {
                 rank: player.rank,
                 withdraw: full.withdrawn.contains(uid),
-                game_id: full.ongoing_user_games.0.get(uid).cloned(),
+                game_id: full.ongoing_user_games.0.get(uid).copied(),
                 pause_delay: None, // TODO?
             })
         });
