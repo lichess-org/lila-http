@@ -6,6 +6,7 @@ pub mod redis;
 pub mod repo;
 
 use arena::{ArenaId, ClientData, UserName};
+use axum::response::{IntoResponse, Response};
 use axum::{
     extract::{Extension, Path, Query},
     http::StatusCode,
@@ -16,7 +17,6 @@ use clap::Parser;
 use opt::Opt;
 use repo::Repo;
 use serde::Deserialize;
-use axum::response::{Response, IntoResponse};
 
 #[tokio::main]
 async fn main() {
@@ -71,7 +71,7 @@ async fn arena(
     Query(query): Query<QueryParams>,
     Extension(repo): Extension<&'static Repo>,
 ) -> Result<Response, StatusCode> {
-    let user_id = query.me.map(|n| n.to_id());
+    let user_id = query.me.map(|n| n.into_id());
     let page = query.page;
     repo.get(id)
         .map(|full| Json(ClientData::new(&full, page, user_id.as_ref())).into_response())

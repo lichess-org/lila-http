@@ -118,7 +118,7 @@ fn make_player_map(standing: &[Player]) -> HashMap<UserId, PlayerMapEntry> {
         .iter()
         .map(|player| {
             (
-                player.name.to_id(),
+                player.name.clone().into_id(),
                 PlayerMapEntry {
                     rank: player.rank,
                     team: player.team.clone(),
@@ -132,6 +132,6 @@ fn standing_to_withdrawn(standing: &[PlayerRedis]) -> HashSet<UserId> {
     standing
         .iter()
         .filter(|p| p.withdraw)
-        .map(|p| p.name.to_id())
+        .map(|p| p.name.clone().into_id())
         .collect()
 }
