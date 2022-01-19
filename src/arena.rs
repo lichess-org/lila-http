@@ -173,7 +173,7 @@ impl ClientData {
                 rank: player.rank,
                 withdraw: full.withdrawn.contains(uid),
                 game_id: full.ongoing_user_games.0.get(uid).cloned(),
-                pause_delay: None,
+                pause_delay: None, // TODO?
             })
         });
         let page = req_page
