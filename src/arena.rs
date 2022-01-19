@@ -153,9 +153,11 @@ pub struct ClientData {
 }
 
 impl ClientData {
-    pub fn new(full: Arc<ArenaFull>, user_id: Option<UserId>) -> ClientData {
-        let page = 1;
-        let players = full.player_vec.chunks(10).nth(page - 1).unwrap_or_default();
+    pub fn new(
+        full: Arc<ArenaFull>,
+        req_page: Option<usize>,
+        user_id: Option<UserId>,
+    ) -> ClientData {
         let me = user_id.as_ref().and_then(|uid| {
             full.player_map.get(uid).map(|player| ClientMe {
                 rank: player.rank.clone(),
@@ -164,6 +166,10 @@ impl ClientData {
                 pause_delay: None,
             })
         });
+        let page = req_page
+            .or_else(|| me.as_ref().map(|player| (player.rank.0 + 9) / 10))
+            .unwrap_or(1);
+        let players = full.player_vec.chunks(10).nth(page - 1).unwrap_or_default();
 
         ClientData {
             shared: Arc::clone(&full.shared),

@@ -62,6 +62,7 @@ async fn main() {
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct QueryParams {
+    page: Option<usize>,
     me: Option<UserName>,
 }
 
@@ -70,8 +71,10 @@ async fn arena(
     Query(query): Query<QueryParams>,
     Extension(repo): Extension<Arc<Repo>>,
 ) -> Result<Json<ClientData>, HttpResponseError> {
+    let user_id = query.me.map(|n| n.to_id());
+    let page = query.page;
     repo.get(id)
-        .map(|full| Json(ClientData::new(full, query.me.map(|n| n.to_id()))))
+        .map(|full| Json(ClientData::new(full, page, user_id)))
         .ok_or_else(not_found)
 }
 
