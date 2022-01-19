@@ -46,6 +46,7 @@ pub async fn subscribe(opt: RedisOpt, repo: &'static Repo) {
             Err(msg) => error!("{:?}", msg),
         }
     }
+    // TODO: What's the best we can do when the Redis connection dies?
 }
 
 #[derive(Deserialize, Clone, Debug)]
