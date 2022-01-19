@@ -134,7 +134,7 @@ impl From<String> for OngoingUserGames {
 
 #[derive(Debug, Clone, Serialize)]
 struct ClientStanding {
-    page: u32,
+    page: usize,
     players: Vec<Player>,
 }
 
@@ -169,13 +169,17 @@ impl ClientData {
         let page = req_page
             .or_else(|| me.as_ref().map(|player| (player.rank.0 + 9) / 10))
             .unwrap_or(1);
-        let players = full.player_vec.chunks(10).nth(page - 1).unwrap_or_default();
+        let players = full
+            .player_vec
+            .chunks(10)
+            .nth(page.saturating_sub(1))
+            .unwrap_or_default();
 
         ClientData {
             shared: Arc::clone(&full.shared),
             me,
             standing: ClientStanding {
-                page: 1,
+                page,
                 players: players.to_vec(),
             },
             team_standing: full
