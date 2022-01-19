@@ -97,7 +97,7 @@ pub struct Player {
     pub withdraw: bool,
     pub sheet: Sheet,
     pub rank: Rank,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub team: Option<TeamId>,
     #[serde(flatten)]
     pub rest: JsValue,
