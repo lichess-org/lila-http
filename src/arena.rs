@@ -66,7 +66,7 @@ pub struct FullRanking(pub HashMap<UserId, Rank>);
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 struct ClientMe {
-    rank: Option<Rank>,
+    rank: Rank,
     withdraw: bool,
     game_id: Option<GameId>,
     pause_delay: Option<u32>,
@@ -140,14 +140,18 @@ impl ClientData {
     pub fn new(full: Arc<ArenaFull>, user_id: Option<UserId>) -> ClientData {
         let page = 1;
         let players = full.standing.chunks(10).nth(page - 1).unwrap_or_default();
-        ClientData {
-            shared: Arc::clone(&full.shared),
-            me: user_id.map(|uid| ClientMe {
-                rank: full.ranking.0.get(&uid).cloned(),
+        let me = user_id.and_then(|uid| {
+            full.ranking.0.get(&uid).map(|rank| ClientMe {
+                rank: rank.clone(),
                 withdraw: full.withdrawn.contains(&uid),
                 game_id: full.ongoing_user_games.0.get(&uid).cloned(),
                 pause_delay: None,
-            }),
+            })
+        });
+
+        ClientData {
+            shared: Arc::clone(&full.shared),
+            me,
             standing: ClientStanding {
                 page: 1,
                 players: players.to_vec(),
