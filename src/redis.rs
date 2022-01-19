@@ -80,7 +80,7 @@ impl PlayerRedis {
 }
 
 #[serde_as]
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ArenaFullRedis {
     pub id: ArenaId,

@@ -10,18 +10,18 @@ pub struct Opt {
     pub bind: SocketAddr,
     /// Disable access from all origins.
     #[clap(long)]
-    pub nocors: bool,
+    pub no_cors: bool,
     /// Base url for the indexer.
-    #[clap(long = "lila", default_value = "http://l.org")]
+    #[clap(long, default_value = "http://l.org")]
     pub lila: String,
     /// Token of https://lichess.org/@/Lilarena to speed up indexing.
     /// The default value is a local dev token, it won't work in production.
-    #[clap(long = "bearer", default_value = "lip_2GB9ilOKexedQCI1xTkP")]
+    #[clap(long, default_value = "lip_2GB9ilOKexedQCI1xTkP")]
     pub bearer: String,
-    #[clap(long = "mongo_url", default_value = "mongodb://localhost:27017")]
+    #[clap(long, default_value = "mongodb://localhost:27017")]
     pub mongo_url: String,
-    #[clap(long = "mongo_db_name", default_value = "lichess")]
+    #[clap(long, default_value = "lichess")]
     pub mongo_db_name: String,
-    #[clap(long = "redis_url", default_value = "redis://localhost")]
+    #[clap(long, default_value = "redis://localhost")]
     pub redis_url: String,
 }

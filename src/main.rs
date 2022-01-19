@@ -33,8 +33,7 @@ async fn main() {
     .format_target(false)
     .init();
 
-    let opt = Opt::parse();
-    dbg!(&opt);
+    let opt = dbg!(Opt::parse());
 
     let repo = Arc::new(Repo::new());
     redis::subscribe(opt.clone(), Arc::clone(&repo)).unwrap();
@@ -45,7 +44,7 @@ async fn main() {
         .layer(AddExtensionLayer::new(opt.clone()))
         .layer(AddExtensionLayer::new(repo));
 
-    let app = if opt.nocors {
+    let app = if opt.no_cors {
         app
     } else {
         app.layer(
@@ -62,8 +61,7 @@ async fn main() {
         .unwrap();
 }
 
-#[derive(Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[derive(Debug, Deserialize)]
 struct QueryParams {
     page: Option<usize>,
     me: Option<UserName>,

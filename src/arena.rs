@@ -10,7 +10,7 @@ use serde_json::Value as JsValue;
 pub struct ArenaId(pub String);
 
 // naming is hard
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ArenaShared {
     nb_players: u32,
@@ -37,7 +37,7 @@ pub struct ArenaShared {
     duel_teams: Option<JsValue>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Deserialize)]
 pub struct TeamStanding(pub Vec<Team>);
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -62,9 +62,10 @@ impl UserName {
 pub struct GameId(String);
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
 pub struct TeamId(String);
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Copy, Clone, Deserialize, Serialize)]
 pub struct Rank(pub usize);
 
+#[derive(Debug)]
 pub struct ArenaFull {
     pub id: ArenaId,
     pub shared: Arc<ArenaShared>,
@@ -111,7 +112,7 @@ pub struct Sheet {
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct SheetScores(String);
 
-#[derive(Clone, Debug)]
+#[derive(Debug, Clone)]
 pub struct OngoingUserGames(HashMap<UserId, GameId>);
 
 impl From<String> for OngoingUserGames {
@@ -121,8 +122,8 @@ impl From<String> for OngoingUserGames {
                 .split(',')
                 .filter(|line| !line.is_empty())
                 .flat_map(|enc| {
-                    let (players, game) = enc.split_once("/").unwrap();
-                    let (p1, p2) = players.split_once("&").unwrap();
+                    let (players, game) = enc.split_once('/').unwrap();
+                    let (p1, p2) = players.split_once('&').unwrap();
                     let game_id = GameId(game.to_string());
                     [
                         (UserId(p1.to_string()), game_id.clone()),
@@ -162,7 +163,7 @@ impl ClientData {
     ) -> ClientData {
         let me = user_id.as_ref().and_then(|uid| {
             full.player_map.get(uid).map(|player| ClientMe {
-                rank: player.rank.clone(),
+                rank: player.rank,
                 withdraw: full.withdrawn.contains(uid),
                 game_id: full.ongoing_user_games.0.get(uid).cloned(),
                 pause_delay: None,

@@ -5,11 +5,11 @@ use moka::future::{Cache, CacheBuilder};
 use crate::arena::{ArenaFull, ArenaId};
 
 pub struct Repo {
-    pub cache: Cache<ArenaId, Arc<ArenaFull>>,
+    cache: Cache<ArenaId, Arc<ArenaFull>>,
 }
 
 impl Repo {
-    pub fn new() -> Repo {
+    pub(crate) fn new() -> Repo {
         Repo {
             cache: CacheBuilder::new(4096) // lots of ongoing tournaments (usermade)
                 .time_to_live(Duration::from_secs(15))
@@ -23,11 +23,5 @@ impl Repo {
 
     pub async fn put(&self, full: ArenaFull) {
         self.cache.insert(full.id.clone(), Arc::new(full)).await
-    }
-}
-
-impl Default for Repo {
-    fn default() -> Self {
-        Repo::new()
     }
 }
