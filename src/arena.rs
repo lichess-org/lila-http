@@ -56,7 +56,7 @@ pub struct UserId(pub String);
 pub struct UserName(pub String);
 impl UserName {
     pub fn to_id(&self) -> UserId {
-        UserId(self.0.to_lowercase())
+        UserId(self.0.to_ascii_lowercase())
     }
 }
 #[derive(Debug, Copy, Clone, Deserialize, Serialize)]
