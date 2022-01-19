@@ -1,8 +1,10 @@
-use serde::{Deserialize, Serialize};
+use std::{
+    collections::{HashMap, HashSet},
+    sync::Arc,
+};
 
+use serde::{Deserialize, Serialize};
 use serde_json::Value as JsValue;
-use std::collections::{HashMap, HashSet};
-use std::sync::Arc;
 
 #[derive(Debug, Eq, PartialEq, Deserialize, Hash, Clone)]
 pub struct ArenaId(pub String);

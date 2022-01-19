@@ -1,18 +1,23 @@
-use crate::arena::{
-    ArenaFull, ArenaId, ArenaShared, OngoingUserGames, Player, Rank, Sheet, SheetScores, TeamId,
-    TeamStanding, UserId, UserName,
+use std::{
+    collections::{HashMap, HashSet},
+    sync::Arc,
 };
-use crate::repo::Repo;
+
 use futures::stream::StreamExt;
 use log::error;
 use redis::RedisError;
 use serde::Deserialize;
-use serde_json::Error as SerdeJsonError;
-use serde_json::Value as JsValue;
+use serde_json::{Error as SerdeJsonError, Value as JsValue};
 use serde_with::{serde_as, FromInto};
-use std::collections::{HashMap, HashSet};
-use std::sync::Arc;
 use thiserror::Error as ThisError;
+
+use crate::{
+    arena::{
+        ArenaFull, ArenaId, ArenaShared, OngoingUserGames, Player, Rank, Sheet, SheetScores,
+        TeamId, TeamStanding, UserId, UserName,
+    },
+    repo::Repo,
+};
 
 #[derive(ThisError, Debug)]
 pub enum Error {

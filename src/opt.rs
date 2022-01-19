@@ -1,5 +1,6 @@
-use clap::Parser;
 use std::net::SocketAddr;
+
+use clap::Parser;
 
 #[derive(Parser, Debug, Clone)]
 pub struct Opt {

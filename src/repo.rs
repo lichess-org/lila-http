@@ -1,7 +1,8 @@
-use crate::arena::{ArenaFull, ArenaId};
+use std::{sync::Arc, time::Duration};
+
 use moka::future::{Cache, CacheBuilder};
-use std::sync::Arc;
-use std::time::Duration;
+
+use crate::arena::{ArenaFull, ArenaId};
 
 pub struct Repo {
     pub cache: Cache<ArenaId, Arc<ArenaFull>>,
