@@ -43,7 +43,7 @@ pub async fn subscribe(opt: RedisOpt, repo: &'static Repo) {
     while let Some(msg) = stream.next().await {
         match parse_message(&msg) {
             Ok(full) => repo.put(full.expand()).await,
-            Err(msg) => error!("{:?}", dbg!(msg)),
+            Err(msg) => error!("{:?}", msg),
         }
     }
 }
