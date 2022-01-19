@@ -18,10 +18,6 @@ pub struct Opt {
     /// The default value is a local dev token, it won't work in production.
     #[clap(long, default_value = "lip_2GB9ilOKexedQCI1xTkP")]
     pub bearer: String,
-    #[clap(long, default_value = "mongodb://localhost:27017")]
-    pub mongo_url: String,
-    #[clap(long, default_value = "lichess")]
-    pub mongo_db_name: String,
     #[clap(long, default_value = "redis://localhost")]
     pub redis_url: String,
 }
