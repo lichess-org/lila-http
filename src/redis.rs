@@ -1,6 +1,6 @@
 use crate::arena::{
-    ArenaFull, ArenaId, ArenaShared, FullRanking, OngoingUserGames, Player, Rank, Sheet,
-    SheetScores, UserId, UserName,
+    ArenaFull, ArenaId, ArenaShared, OngoingUserGames, Player, Rank, Sheet, SheetScores, TeamId,
+    TeamStanding, UserId, UserName,
 };
 use crate::repo::Repo;
 use futures::stream::StreamExt;
@@ -10,7 +10,7 @@ use serde::Deserialize;
 use serde_json::Error as SerdeJsonError;
 use serde_json::Value as JsValue;
 use serde_with::{serde_as, FromInto};
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 use thiserror::Error as ThisError;
 
@@ -48,17 +48,18 @@ pub fn subscribe(opt: crate::opt::Opt, repo: Arc<Repo>) -> Result<(), Error> {
 #[derive(Deserialize, Clone, Debug)]
 pub struct PlayerRedis {
     pub name: UserName,
-    #[serde(default, skip_serializing_if = "negate_ref")]
+    #[serde(default)]
     pub withdraw: bool,
     pub sheet: SheetScores,
     #[serde(default)]
     pub fire: bool,
+    pub team: Option<TeamId>,
     #[serde(flatten)]
     rest: JsValue,
 }
 
 impl PlayerRedis {
-    fn expand(self, rank: usize) -> Player {
+    fn expand(self, rank: Rank) -> Player {
         Player {
             name: self.name,
             withdraw: self.withdraw,
@@ -67,6 +68,7 @@ impl PlayerRedis {
                 scores: self.sheet,
             },
             rank,
+            team: self.team,
             rest: self.rest,
         }
     }
@@ -82,34 +84,36 @@ pub struct ArenaFullRedis {
     #[serde_as(as = "FromInto<String>")]
     pub ongoing_user_games: OngoingUserGames,
     pub standing: Vec<PlayerRedis>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub team_standing: Option<TeamStanding>,
 }
 
 impl ArenaFullRedis {
     pub fn expand(self) -> ArenaFull {
+        let withdrawn = standing_to_withdrawn(&self.standing);
+        let player_vec: Vec<Player> = self
+            .standing
+            .into_iter()
+            .enumerate()
+            .map(|(index, p)| p.expand(Rank(index + 1)))
+            .collect();
         ArenaFull {
             id: self.id,
             ongoing_user_games: self.ongoing_user_games,
-            ranking: standing_to_ranking(&self.standing),
-            withdrawn: standing_to_withdrawn(&self.standing),
-            standing: self
-                .standing
-                .into_iter()
-                .enumerate()
-                .map(|(index, p)| p.expand(index + 1))
-                .collect(),
+            withdrawn,
+            player_map: make_player_map(&player_vec),
+            player_vec,
+            team_standing: self.team_standing,
             shared: self.shared,
         }
     }
 }
 
-fn standing_to_ranking(standing: &[PlayerRedis]) -> FullRanking {
-    FullRanking(
-        standing
-            .iter()
-            .enumerate()
-            .map(|(index, player)| (player.name.to_id(), Rank(index + 1)))
-            .collect(),
-    )
+fn make_player_map(standing: &[Player]) -> HashMap<UserId, Player> {
+    standing
+        .iter()
+        .map(|player| (player.name.to_id(), player.clone()))
+        .collect()
 }
 
 fn standing_to_withdrawn(standing: &[PlayerRedis]) -> HashSet<UserId> {
