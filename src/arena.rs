@@ -83,10 +83,10 @@ fn is_false(b: &bool) -> bool {
 }
 
 #[skip_serializing_none]
-#[derive(Deserialize, Serialize, Clone, Debug)]
+#[derive(Serialize, Clone, Debug)]
 pub struct Player {
     pub name: UserName,
-    #[serde(default, skip_serializing_if = "is_false")]
+    #[serde(skip_serializing_if = "is_false")]
     pub withdraw: bool,
     pub sheet: Sheet,
     pub rank: Rank,
