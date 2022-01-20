@@ -1,6 +1,7 @@
 use std::{
     collections::{HashMap, HashSet},
     sync::Arc,
+    thread, time,
 };
 
 use futures::stream::StreamExt;
@@ -23,18 +24,29 @@ fn parse_message(msg: &redis::Msg) -> Result<ArenaFullRedis, SerdeJsonError> {
 }
 
 pub async fn subscribe(opt: RedisOpt, repo: &'static Repo) {
-    let client = redis::Client::open(opt.redis_url).unwrap();
-    let subscribe_con = client.get_tokio_connection().await.unwrap();
-    let mut pubsub = subscribe_con.into_pubsub();
-    pubsub.subscribe("http-out").await.unwrap();
-    let mut stream = pubsub.on_message();
-    while let Some(msg) = stream.next().await {
-        match parse_message(&msg) {
-            Ok(full) => repo.put(full.expand()).await,
-            Err(msg) => error!("{:?}", msg),
+    let client = redis::Client::open(opt.redis_url.clone()).unwrap();
+    loop {
+        println!("Reddit stream connecting...");
+        match client.get_tokio_connection().await {
+            Ok(subscribe_con) => {
+                let mut pubsub = subscribe_con.into_pubsub();
+                pubsub.subscribe("http-out").await.unwrap();
+                let mut stream = pubsub.on_message();
+                println!("Reddit stream connected.");
+                while let Some(msg) = stream.next().await {
+                    match parse_message(&msg) {
+                        Ok(full) => repo.put(full.expand()).await,
+                        Err(msg) => error!("{:?}", msg),
+                    }
+                }
+                println!("Reddit stream end!");
+            }
+            Err(error) => {
+                println!("Couldn't connect to redis: {}", error);
+            }
         }
+        thread::sleep(time::Duration::from_secs(1));
     }
-    // TODO: What's the best we can do when the Redis connection dies?
 }
 
 #[derive(Deserialize, Clone, Debug)]
