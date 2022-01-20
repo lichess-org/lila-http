@@ -199,7 +199,7 @@ impl ClientData<'_> {
                 .team_standing
                 .as_ref()
                 .map(|teams| teams.0.iter().take(10).cloned().collect()),
-            my_team: user_id.and_then(|uid| ClientData::get_my_team_if_not_included(&full, uid)),
+            my_team: user_id.and_then(|uid| ClientData::get_my_team_if_not_included(full, uid)),
             _todo_remove_this: &(),
         }
     }
