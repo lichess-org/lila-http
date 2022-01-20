@@ -11,8 +11,8 @@ use serde_with::{serde_as, FromInto};
 
 use crate::{
     arena::{
-        ArenaFull, ArenaId, ArenaShared, OngoingUserGames, Player, PlayerMapEntry, Rank, Sheet,
-        SheetScores, TeamId, TeamStanding, UserId, UserName,
+        ArenaFull, ArenaId, ArenaShared, OngoingUserGames, PauseSeconds, Player, PlayerMapEntry,
+        Rank, Sheet, SheetScores, TeamId, TeamStanding, UserId, UserName,
     },
     opt::RedisOpt,
     repo::Repo,
@@ -46,6 +46,7 @@ struct PlayerRedis {
     #[serde(default)]
     pub fire: bool,
     pub team: Option<TeamId>,
+    pub pause: Option<PauseSeconds>,
     #[serde(flatten)]
     rest: JsValue,
 }
@@ -84,11 +85,17 @@ struct ArenaFullRedis {
 impl ArenaFullRedis {
     pub fn expand(self) -> ArenaFull {
         let withdrawn = standing_to_withdrawn(&self.standing);
+        let mut pauses: HashMap<UserId, PauseSeconds> = HashMap::new();
         let player_vec: Vec<Player> = self
             .standing
             .into_iter()
             .enumerate()
-            .map(|(index, p)| p.expand(Rank(index + 1)))
+            .map(|(index, player)| {
+                if let Some(pause) = player.pause {
+                    pauses.insert(player.name.clone().into_id(), pause);
+                }
+                player.expand(Rank(index + 1))
+            })
             .collect();
         ArenaFull {
             id: self.id,
@@ -98,6 +105,7 @@ impl ArenaFullRedis {
             player_vec,
             team_standing: self.team_standing,
             shared: self.shared,
+            pauses,
         }
     }
 }

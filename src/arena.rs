@@ -57,6 +57,8 @@ pub struct GameId(ArrayString<8>);
 pub struct TeamId(String);
 #[derive(Debug, Copy, Clone, Deserialize, Serialize)]
 pub struct Rank(pub usize);
+#[derive(Debug, Copy, Clone, Deserialize, Serialize)]
+pub struct PauseSeconds(pub usize);
 
 #[derive(Debug)]
 pub struct ArenaFull {
@@ -67,15 +69,18 @@ pub struct ArenaFull {
     pub player_map: HashMap<UserId, PlayerMapEntry>,
     pub withdrawn: HashSet<UserId>,
     pub team_standing: Option<TeamStanding>,
+    pub pauses: HashMap<UserId, PauseSeconds>,
 }
 
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
+#[skip_serializing_none]
 struct ClientMe {
     rank: Rank,
+    #[serde(skip_serializing_if = "is_false")]
     withdraw: bool,
     game_id: Option<GameId>,
-    pause_delay: Option<u32>,
+    pause_delay: Option<PauseSeconds>,
 }
 
 fn is_false(b: &bool) -> bool {
@@ -165,7 +170,7 @@ impl ClientData<'_> {
                 rank: player.rank,
                 withdraw: full.withdrawn.contains(uid),
                 game_id: full.ongoing_user_games.0.get(uid).copied(),
-                pause_delay: None, // TODO?
+                pause_delay: full.pauses.get(uid).cloned(),
             })
         });
         let page = req_page
