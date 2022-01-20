@@ -78,7 +78,6 @@ struct ArenaFullRedis {
     #[serde_as(as = "FromInto<String>")]
     pub ongoing_user_games: OngoingUserGames,
     pub standing: Vec<PlayerRedis>,
-    #[serde(default)]
     pub team_standing: Option<TeamStanding>,
 }
 

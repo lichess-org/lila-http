@@ -6,35 +6,26 @@ use std::{
 use arrayvec::ArrayString;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsValue;
+use serde_with::skip_serializing_none;
 
 #[derive(Debug, Eq, PartialEq, Deserialize, Hash, Copy, Clone)]
 pub struct ArenaId(pub ArrayString<8>);
 
-// naming is hard
+#[skip_serializing_none]
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ArenaShared {
     nb_players: u32,
     duels: JsValue,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
     seconds_to_finish: Option<u32>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
     seconds_to_start: Option<u32>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
     is_started: Option<bool>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
     is_finished: Option<bool>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
     is_recently_finished: Option<bool>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
     featured: Option<JsValue>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
     podium: Option<JsValue>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
     pairings_closed: Option<bool>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
     stats: Option<JsValue>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
     duel_teams: Option<JsValue>,
 }
 
@@ -91,6 +82,7 @@ fn is_false(b: &bool) -> bool {
     !b
 }
 
+#[skip_serializing_none]
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct Player {
     pub name: UserName,
@@ -98,7 +90,6 @@ pub struct Player {
     pub withdraw: bool,
     pub sheet: Sheet,
     pub rank: Rank,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub team: Option<TeamId>,
     #[serde(flatten)]
     pub rest: JsValue,
@@ -149,17 +140,15 @@ struct ClientStanding {
     players: Vec<Player>,
 }
 
+#[skip_serializing_none]
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ClientData<'a> {
     #[serde(flatten)]
     shared: Arc<ArenaShared>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     me: Option<ClientMe>,
     standing: ClientStanding,
-    #[serde(skip_serializing_if = "Option::is_none")]
     team_standing: Option<Vec<Team>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     my_team: Option<Team>, // only for large battles, if not included in `team_standing`
     #[serde(skip)]
     _todo_remove_this: &'a (),
