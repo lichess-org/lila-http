@@ -58,7 +58,7 @@ pub struct TeamId(String);
 #[derive(Debug, Copy, Clone, Deserialize, Serialize)]
 pub struct Rank(pub usize);
 #[derive(Debug, Copy, Clone, Deserialize, Serialize)]
-pub struct PauseSeconds(pub usize);
+pub struct PauseSeconds(u32);
 
 #[derive(Debug)]
 pub struct ArenaFull {
