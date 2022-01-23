@@ -8,7 +8,7 @@ use futures::stream::StreamExt;
 use redis::RedisError;
 use serde::Deserialize;
 use serde_json::{Error as SerdeJsonError, Value as JsValue};
-use serde_with::{serde_as, FromInto};
+use serde_with::{serde_as, DisplayFromStr};
 
 use crate::{
     arena::{
@@ -91,7 +91,7 @@ struct ArenaFullRedis {
     // Can also disable rc feature for serde, when this is done.
     #[serde(flatten)]
     pub shared: Arc<ArenaShared>,
-    #[serde_as(as = "FromInto<String>")]
+    #[serde_as(as = "DisplayFromStr")]
     pub ongoing_user_games: OngoingUserGames,
     pub standing: Vec<PlayerRedis>,
     pub team_standing: Option<TeamStanding>,
