@@ -1,7 +1,7 @@
 use std::{
     collections::{HashMap, HashSet},
     sync::Arc,
-    thread, time,
+    time::Duration,
 };
 
 use futures::stream::StreamExt;
@@ -29,7 +29,7 @@ pub async fn subscribe(opt: RedisOpt, repo: &'static Repo) {
         if let Err(err) = subscribe_inner(&client, repo).await {
             log::error!("{}", err);
         }
-        thread::sleep(time::Duration::from_secs(1));
+        tokio::time::sleep(Duration::from_secs(1)).await;
     }
 }
 
