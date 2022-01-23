@@ -97,17 +97,12 @@ struct ArenaFullRedis {
 impl ArenaFullRedis {
     pub fn expand(self) -> ArenaFull {
         let withdrawn = standing_to_withdrawn(&self.standing);
-        let mut pauses: HashMap<UserId, PauseSeconds> = HashMap::new();
+        let pauses = standing_to_pauses(&self.standing);
         let player_vec: Vec<Player> = self
             .standing
             .into_iter()
             .enumerate()
-            .map(|(index, player)| {
-                if let Some(pause) = player.pause {
-                    pauses.insert(player.name.clone().into_id(), pause);
-                }
-                player.expand(Rank(index + 1))
-            })
+            .map(|(index, player)| player.expand(Rank(index + 1)))
             .collect();
         ArenaFull {
             id: self.id,
@@ -142,5 +137,16 @@ fn standing_to_withdrawn(standing: &[PlayerRedis]) -> HashSet<UserId> {
         .iter()
         .filter(|p| p.withdraw)
         .map(|p| p.name.clone().into_id())
+        .collect()
+}
+
+fn standing_to_pauses(standing: &[PlayerRedis]) -> HashMap<UserId, PauseSeconds> {
+    standing
+        .into_iter()
+        .flat_map(|player| {
+            player
+                .pause
+                .map(|pause| (player.name.clone().into_id(), pause))
+        })
         .collect()
 }
