@@ -5,7 +5,7 @@ use std::{
 };
 
 use futures::stream::StreamExt;
-use log::error;
+use redis::RedisError;
 use serde::Deserialize;
 use serde_json::{Error as SerdeJsonError, Value as JsValue};
 use serde_with::{serde_as, FromInto};
@@ -26,27 +26,30 @@ fn parse_message(msg: &redis::Msg) -> Result<ArenaFullRedis, SerdeJsonError> {
 pub async fn subscribe(opt: RedisOpt, repo: &'static Repo) {
     let client = redis::Client::open(opt.redis_url).expect("valid redis url");
     loop {
-        println!("Reddit stream connecting...");
-        match client.get_tokio_connection().await {
-            Ok(subscribe_con) => {
-                let mut pubsub = subscribe_con.into_pubsub();
-                pubsub.subscribe("http-out").await.unwrap();
-                let mut stream = pubsub.on_message();
-                println!("Reddit stream connected.");
-                while let Some(msg) = stream.next().await {
-                    match parse_message(&msg) {
-                        Ok(full) => repo.put(full.expand()).await,
-                        Err(msg) => error!("{:?}", msg),
-                    }
-                }
-                println!("Reddit stream end!");
-            }
-            Err(error) => {
-                println!("Couldn't connect to redis: {}", error);
-            }
+        if let Err(err) = subscribe_inner(&client, repo).await {
+            log::error!("{}", err);
         }
         thread::sleep(time::Duration::from_secs(1));
     }
+}
+
+async fn subscribe_inner(client: &redis::Client, repo: &'static Repo) -> Result<(), RedisError> {
+    log::info!("Redis stream connecting ...");
+    let con = client.get_tokio_connection().await?;
+    let mut pubsub = con.into_pubsub();
+    pubsub.subscribe("http-out").await?;
+    let mut stream = pubsub.on_message();
+    log::info!("Redis stream connected.");
+
+    while let Some(msg) = stream.next().await {
+        match parse_message(&msg) {
+            Ok(full) => repo.put(full.expand()).await,
+            Err(msg) => log::error!("Failed to parse message: {}", msg),
+        }
+    }
+    log::error!("Redis stream end.");
+
+    Ok(())
 }
 
 #[derive(Deserialize, Clone, Debug)]
