@@ -24,7 +24,7 @@ fn parse_message(msg: &redis::Msg) -> Result<ArenaFullRedis, SerdeJsonError> {
 }
 
 pub async fn subscribe(opt: RedisOpt, repo: &'static Repo) {
-    let client = redis::Client::open(opt.redis_url.clone()).unwrap();
+    let client = redis::Client::open(opt.redis_url.clone()).expect("valid redis url");
     loop {
         println!("Reddit stream connecting...");
         match client.get_tokio_connection().await {

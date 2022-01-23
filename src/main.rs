@@ -57,7 +57,7 @@ async fn main() {
     axum::Server::bind(&opt.bind)
         .serve(app.into_make_service())
         .await
-        .unwrap();
+        .expect("bind");
 }
 
 #[derive(Debug, Deserialize)]
