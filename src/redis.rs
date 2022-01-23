@@ -24,7 +24,7 @@ fn parse_message(msg: &redis::Msg) -> Result<ArenaFullRedis, SerdeJsonError> {
 }
 
 pub async fn subscribe(opt: RedisOpt, repo: &'static Repo) {
-    let client = redis::Client::open(opt.redis_url.clone()).expect("valid redis url");
+    let client = redis::Client::open(opt.redis_url).expect("valid redis url");
     loop {
         println!("Reddit stream connecting...");
         match client.get_tokio_connection().await {
@@ -142,7 +142,7 @@ fn standing_to_withdrawn(standing: &[PlayerRedis]) -> HashSet<UserId> {
 
 fn standing_to_pauses(standing: &[PlayerRedis]) -> HashMap<UserId, PauseSeconds> {
     standing
-        .into_iter()
+        .iter()
         .flat_map(|player| {
             player
                 .pause
