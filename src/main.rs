@@ -71,7 +71,7 @@ async fn arena(
     Query(query): Query<QueryParams>,
     Extension(repo): Extension<&'static Repo>,
 ) -> Result<ErasedJson, StatusCode> {
-    let user_id = query.me.map(|n| n.into_id());
+    let user_id = query.me.map(UserName::into_id);
     let page = query.page;
     repo.get(id)
         .map(|full| ErasedJson::new(ClientData::new(&full, page, user_id.as_ref())))

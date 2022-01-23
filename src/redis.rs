@@ -146,7 +146,7 @@ fn standing_to_withdrawn(standing: &[PlayerRedis]) -> HashSet<UserId> {
 fn standing_to_pauses(standing: &[PlayerRedis]) -> HashMap<UserId, PauseSeconds> {
     standing
         .iter()
-        .flat_map(|player| {
+        .filter_map(|player| {
             player
                 .pause
                 .map(|pause| (player.name.clone().into_id(), pause))

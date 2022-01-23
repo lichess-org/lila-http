@@ -181,7 +181,7 @@ impl ClientData<'_> {
                 rank: player.rank,
                 withdraw: full.withdrawn.contains(uid),
                 game_id: full.ongoing_user_games.0.get(uid).copied(),
-                pause_delay: full.pauses.get(uid).cloned(),
+                pause_delay: full.pauses.get(uid).copied(),
             })
         });
         let page = req_page

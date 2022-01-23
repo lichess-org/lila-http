@@ -22,6 +22,6 @@ impl Repo {
     }
 
     pub async fn put(&self, full: ArenaFull) {
-        self.cache.insert(full.id, Arc::new(full)).await
+        self.cache.insert(full.id, Arc::new(full)).await;
     }
 }
