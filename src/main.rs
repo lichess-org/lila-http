@@ -6,13 +6,13 @@ pub mod redis;
 pub mod repo;
 
 use arena::{ArenaId, ClientData, UserName};
-use axum::response::{IntoResponse, Response};
 use axum::{
     extract::{Extension, Path, Query},
     http::StatusCode,
     routing::get,
-    AddExtensionLayer, Json, Router,
+    AddExtensionLayer, Router,
 };
+use axum_extra::response::ErasedJson;
 use clap::Parser;
 use opt::Opt;
 use repo::Repo;
@@ -70,11 +70,11 @@ async fn arena(
     Path(id): Path<ArenaId>,
     Query(query): Query<QueryParams>,
     Extension(repo): Extension<&'static Repo>,
-) -> Result<Response, StatusCode> {
+) -> Result<ErasedJson, StatusCode> {
     let user_id = query.me.map(|n| n.into_id());
     let page = query.page;
     repo.get(id)
-        .map(|full| Json(ClientData::new(&full, page, user_id.as_ref())).into_response())
+        .map(|full| ErasedJson::new(ClientData::new(&full, page, user_id.as_ref())))
         .ok_or(StatusCode::NOT_FOUND)
 }
 
