@@ -42,9 +42,9 @@ pub struct Team {
 }
 
 #[derive(Debug, Clone, Deserialize, Eq, PartialEq, Hash)]
-pub struct UserId(pub String);
+pub struct UserId(Box<str>);
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct UserName(pub String);
+pub struct UserName(Box<str>);
 impl UserName {
     pub fn into_id(mut self) -> UserId {
         self.0.make_ascii_lowercase();
@@ -54,7 +54,7 @@ impl UserName {
 #[derive(Debug, Copy, Clone, Deserialize, Serialize)]
 pub struct GameId(ArrayString<8>);
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
-pub struct TeamId(String);
+pub struct TeamId(Box<str>);
 #[derive(Debug, Copy, Clone, Deserialize, Serialize)]
 pub struct Rank(pub usize);
 #[derive(Debug, Copy, Clone, Deserialize, Serialize)]
@@ -114,7 +114,7 @@ pub struct Sheet {
 }
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
-pub struct SheetScores(String);
+pub struct SheetScores(Box<str>);
 
 #[derive(Debug, Clone)]
 pub struct OngoingUserGames(HashMap<UserId, GameId>);
@@ -129,10 +129,7 @@ impl From<String> for OngoingUserGames {
                     let (players, game) = enc.split_once('/').unwrap();
                     let (p1, p2) = players.split_once('&').unwrap();
                     let game_id = GameId(ArrayString::from(game).unwrap());
-                    [
-                        (UserId(p1.to_string()), game_id),
-                        (UserId(p2.to_string()), game_id),
-                    ]
+                    [(UserId(p1.into()), game_id), (UserId(p2.into()), game_id)]
                 })
                 .collect(),
         )
