@@ -7,10 +7,10 @@ pub mod repo;
 
 use arena::{ArenaId, ClientData, UserName};
 use axum::{
-    extract::{Extension, Path, Query},
+    extract::{Path, Query},
     http::StatusCode,
     routing::get,
-    AddExtensionLayer, Router,
+    Router,
 };
 use axum_extra::response::ErasedJson;
 use clap::Parser;
@@ -40,8 +40,7 @@ async fn main() {
 
     let app = Router::new()
         .route("/", get(root))
-        .route("/:id", get(arena))
-        .layer(AddExtensionLayer::new(repo));
+        .route("/:id", get(move |id, query| arena(id, query, repo)));
 
     let app = if opt.no_cors {
         app
@@ -69,7 +68,7 @@ struct QueryParams {
 async fn arena(
     Path(id): Path<ArenaId>,
     Query(query): Query<QueryParams>,
-    Extension(repo): Extension<&'static Repo>,
+    repo: &'static Repo,
 ) -> Result<ErasedJson, StatusCode> {
     let user_id = query.me.map(UserName::into_id);
     let page = query.page;
