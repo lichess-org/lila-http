@@ -1,6 +1,5 @@
 use std::{
     collections::{HashMap, HashSet},
-    sync::Arc,
     time::Duration,
 };
 
@@ -87,10 +86,8 @@ impl PlayerRedis {
 #[serde(rename_all = "camelCase")]
 struct ArenaFullRedis {
     pub id: ArenaId,
-    // TODO: Can probably remove Arc here, and just let ClientData borrow.
-    // Can also disable rc feature for serde, when this is done.
     #[serde(flatten)]
-    pub shared: Arc<ArenaShared>,
+    pub shared: ArenaShared,
     #[serde_as(as = "DisplayFromStr")]
     pub ongoing_user_games: OngoingUserGames,
     pub standing: Vec<PlayerRedis>,

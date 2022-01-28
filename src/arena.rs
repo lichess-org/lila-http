@@ -1,7 +1,6 @@
 use std::{
     collections::{HashMap, HashSet},
     str::FromStr,
-    sync::Arc,
 };
 
 use arrayvec::ArrayString;
@@ -70,7 +69,7 @@ pub struct PauseSeconds(u32);
 #[derive(Debug)]
 pub struct ArenaFull {
     pub id: ArenaId,
-    pub shared: Arc<ArenaShared>,
+    pub shared: ArenaShared,
     pub ongoing_user_games: OngoingUserGames,
     pub player_vec: Vec<Player>,
     pub player_map: HashMap<UserId, PlayerMapEntry>,
@@ -161,13 +160,11 @@ struct ClientStanding {
 #[serde(rename_all = "camelCase")]
 pub struct ClientData<'a> {
     #[serde(flatten)]
-    shared: Arc<ArenaShared>,
+    shared: &'a ArenaShared,
     me: Option<ClientMe>,
     standing: ClientStanding,
     team_standing: Option<Vec<Team>>,
     my_team: Option<Team>, // only for large battles, if not included in `team_standing`
-    #[serde(skip)]
-    _todo_remove_this: &'a (),
 }
 
 impl ClientData<'_> {
@@ -194,7 +191,7 @@ impl ClientData<'_> {
             .unwrap_or_default();
 
         ClientData {
-            shared: Arc::clone(&full.shared),
+            shared: &full.shared,
             me,
             standing: ClientStanding {
                 page,
@@ -205,7 +202,6 @@ impl ClientData<'_> {
                 .as_ref()
                 .map(|teams| teams.0.iter().take(10).cloned().collect()),
             my_team: user_id.and_then(|uid| ClientData::get_my_team_if_not_included(full, uid)),
-            _todo_remove_this: &(),
         }
     }
 
