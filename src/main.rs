@@ -40,7 +40,7 @@ async fn main() {
 
     let app = Router::new()
         .route("/", get(root))
-        .route("/:id", get(move |id, query| arena(id, query, repo)));
+        .route("/tournament/:id", get(move |id, query| arena(id, query, repo)));
 
     let app = if opt.no_cors {
         app
