@@ -150,3 +150,16 @@ fn standing_to_pauses(standing: &[PlayerRedis]) -> HashMap<UserId, PauseSeconds>
         })
         .collect()
 }
+
+#[cfg(test)]
+mod tests {
+    use super::ArenaFullRedis;
+    use serde_json::Error as SerdeJsonError;
+
+    #[test]
+    fn test_arena_full_redis() -> Result<(), SerdeJsonError> {
+        // Before tournament start.
+        let _: ArenaFullRedis = serde_json::from_str("{\"nbPlayers\":7,\"duels\":[],\"secondsToStart\":1821,\"id\":\"NCGG81ve\",\"ongoingUserGames\":\"\",\"standing\":[{\"name\":\"RoQqPWYk\",\"rating\":2302,\"score\":0,\"sheet\":\"\",\"provisional\":true},{\"name\":\"xSpaceX\",\"rating\":2134,\"score\":0,\"sheet\":\"\"},{\"name\":\"Solal35\",\"rating\":1961,\"score\":0,\"sheet\":\"\",\"provisional\":true},{\"name\":\"loepare\",\"rating\":1875,\"score\":0,\"sheet\":\"\"},{\"name\":\"thibault\",\"rating\":1870,\"score\":0,\"sheet\":\"\"},{\"name\":\"revoof\",\"rating\":1800,\"score\":0,\"sheet\":\"\",\"provisional\":true},{\"name\":\"cham\",\"rating\":1697,\"score\":0,\"sheet\":\"\"},{\"name\":\"ImaginaryGC\",\"rating\":879,\"score\":0,\"sheet\":\"\"}]}")?;
+        Ok(())
+    }
+}
