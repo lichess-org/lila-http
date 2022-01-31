@@ -10,10 +10,6 @@ use serde_json::Value as JsValue;
 use serde_with::skip_serializing_none;
 use thiserror::Error;
 
-/// Opaque continguous data that is not even parsed, except to find the end.
-/// Does not work with `#[serde(flatten)]`.
-type RawJsValue = Box<serde_json::value::RawValue>;
-
 #[derive(Debug, Eq, PartialEq, Deserialize, Hash, Copy, Clone)]
 pub struct ArenaId(pub ArrayString<8>);
 
@@ -22,17 +18,17 @@ pub struct ArenaId(pub ArrayString<8>);
 #[serde(rename_all = "camelCase")]
 pub struct ArenaShared {
     nb_players: u32,
-    duels: RawJsValue,
+    duels: JsValue,
     seconds_to_finish: Option<u32>,
     seconds_to_start: Option<u32>,
     is_started: Option<bool>,
     is_finished: Option<bool>,
     is_recently_finished: Option<bool>,
-    featured: Option<RawJsValue>,
-    podium: Option<RawJsValue>,
+    featured: Option<JsValue>,
+    podium: Option<JsValue>,
     pairings_closed: Option<bool>,
-    stats: Option<RawJsValue>,
-    duel_teams: Option<RawJsValue>,
+    stats: Option<JsValue>,
+    duel_teams: Option<JsValue>,
 }
 
 #[derive(Debug, Deserialize)]
