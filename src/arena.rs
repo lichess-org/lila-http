@@ -148,6 +148,7 @@ impl FromStr for OngoingUserGames {
 #[derive(Debug, Clone, Serialize)]
 struct ClientStanding {
     page: usize,
+    // TODO: Could be &'a [Player]
     players: Vec<Player>,
 }
 
@@ -159,7 +160,9 @@ pub struct ClientData<'a> {
     shared: &'a ArenaShared,
     me: Option<ClientMe>,
     standing: ClientStanding,
+    // TODO: Could be Option<&'a [Team]>
     team_standing: Option<Vec<Team>>,
+    // TODO: Could be Option<&'a Team>
     my_team: Option<Team>, // only for large battles, if not included in `team_standing`
 }
 
