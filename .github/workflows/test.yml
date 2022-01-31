@@ -1,4 +1,4 @@
-name: Check
+name: Test
 
 on: [push, pull_request]
 
@@ -13,4 +13,4 @@ jobs:
           profile: minimal
       - uses: actions-rs/cargo@v1
         with:
-          command: check
+          command: test
