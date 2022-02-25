@@ -146,10 +146,9 @@ impl FromStr for OngoingUserGames {
 }
 
 #[derive(Debug, Clone, Serialize)]
-struct ClientStanding {
+struct ClientStanding<'a> {
     page: usize,
-    // TODO: Could be &'a [Player]
-    players: Vec<Player>,
+    players: &'a [Player],
 }
 
 #[skip_serializing_none]
@@ -159,11 +158,9 @@ pub struct ClientData<'a> {
     #[serde(flatten)]
     shared: &'a ArenaShared,
     me: Option<ClientMe>,
-    standing: ClientStanding,
-    // TODO: Could be Option<&'a [Team]>
-    team_standing: Option<Vec<Team>>,
-    // TODO: Could be Option<&'a Team>
-    my_team: Option<Team>, // only for large battles, if not included in `team_standing`
+    standing: ClientStanding<'a>,
+    team_standing: Option<&'a [Team]>,
+    my_team: Option<&'a Team>, // only for large battles, if not included in `team_standing`
 }
 
 impl ClientData<'_> {
@@ -192,19 +189,16 @@ impl ClientData<'_> {
         ClientData {
             shared: &full.shared,
             me,
-            standing: ClientStanding {
-                page,
-                players: players.to_vec(),
-            },
+            standing: ClientStanding { page, players },
             team_standing: full
                 .team_standing
                 .as_ref()
-                .map(|teams| teams.0.iter().take(10).cloned().collect()),
+                .and_then(|teams| teams.0.chunks(10).next()),
             my_team: user_id.and_then(|uid| ClientData::get_my_team_if_not_included(full, uid)),
         }
     }
 
-    fn get_my_team_if_not_included(full: &ArenaFull, user_id: &UserId) -> Option<Team> {
+    fn get_my_team_if_not_included<'a>(full: &'a ArenaFull, user_id: &UserId) -> Option<&'a Team> {
         let player = full.player_map.get(user_id)?;
         let team_id = player.team.as_ref()?;
         let big_standing = full
@@ -216,6 +210,5 @@ impl ClientData<'_> {
             .iter()
             .find(|team| &team.id == team_id)
             .filter(|team| team.rank.0 > 10)
-            .cloned()
     }
 }
