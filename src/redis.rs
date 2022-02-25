@@ -153,8 +153,9 @@ fn standing_to_pauses(standing: &[PlayerRedis]) -> HashMap<UserId, PauseSeconds>
 
 #[cfg(test)]
 mod tests {
-    use super::ArenaFullRedis;
     use serde_json::Error as SerdeJsonError;
+
+    use super::ArenaFullRedis;
 
     #[test]
     fn test_arena_full_redis() -> Result<(), SerdeJsonError> {
