@@ -1,5 +1,6 @@
 use std::{
     collections::{HashMap, HashSet},
+    ops::Not,
     str::FromStr,
 };
 
@@ -79,21 +80,17 @@ pub struct ArenaFull {
 #[skip_serializing_none]
 struct ClientMe {
     rank: Rank,
-    #[serde(skip_serializing_if = "is_false")]
+    #[serde(skip_serializing_if = "Not::not")]
     withdraw: bool,
     game_id: Option<GameId>,
     pause_delay: Option<PauseSeconds>,
-}
-
-fn is_false(b: &bool) -> bool {
-    !b
 }
 
 #[skip_serializing_none]
 #[derive(Serialize, Clone, Debug)]
 pub struct Player {
     pub name: UserName,
-    #[serde(skip_serializing_if = "is_false")]
+    #[serde(skip_serializing_if = "Not::not")]
     pub withdraw: bool,
     pub sheet: Sheet,
     pub rank: Rank,
@@ -111,7 +108,7 @@ pub struct PlayerMapEntry {
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct Sheet {
     pub scores: SheetScores,
-    #[serde(default, skip_serializing_if = "is_false")]
+    #[serde(default, skip_serializing_if = "Not::not")]
     pub fire: bool,
 }
 
