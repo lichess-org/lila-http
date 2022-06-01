@@ -123,9 +123,9 @@ dependencies = [
 
 [[package]]
 name = "axum-extra"
-version = "0.2.1"
+version = "0.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bb752c1940e365de8be991c909da4af5e07fe84afaaa8c57abd957f1555d8665"
+checksum = "75330529f6b27544cedc6089108602a056d016df6aa4f2cb24408d840392ef2d"
 dependencies = [
  "axum",
  "bytes",
@@ -135,7 +135,7 @@ dependencies = [
  "serde",
  "serde_json",
  "tower",
- "tower-http 0.2.5",
+ "tower-http 0.3.2",
  "tower-layer",
  "tower-service",
 ]
@@ -839,9 +839,9 @@ dependencies = [
 
 [[package]]
 name = "moka"
-version = "0.8.2"
+version = "0.8.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ef9d038ced38770a867f2300ef21e1193b5e26d8e8e060fa5c034d1dddc57452"
+checksum = "df72b50274c0988d9f4a6e808e06d9d926f265db6f8bbda1576bcaa658e72763"
 dependencies = [
  "async-io",
  "async-lock",
@@ -1044,9 +1044,9 @@ dependencies = [
 
 [[package]]
 name = "quanta"
-version = "0.9.3"
+version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "20afe714292d5e879d8b12740aa223c6a88f118af41870e8b6196e39a02238a8"
+checksum = "bafd74c340a0a7e79415981ede3460df16b530fd071541901a57416eea950b17"
 dependencies = [
  "crossbeam-utils 0.8.8",
  "libc",
@@ -1132,12 +1132,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "rustversion"
-version = "1.0.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f2cc38e8fa666e2de3c4aba7edeb5ffc5246c1c2ed0e3d17e560aeeba736b23f"
-
-[[package]]
 name = "ryu"
 version = "1.0.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1221,11 +1215,10 @@ dependencies = [
 
 [[package]]
 name = "serde_with"
-version = "1.12.1"
+version = "1.14.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "946fa04a8ac43ff78a1f4b811990afb9ddbdf5890b46d6dda0ba1998230138b7"
+checksum = "678b5a069e50bf00ecd22d0cd8ddf7c236f68581b03db652061ed5eb13a312ff"
 dependencies = [
- "rustversion",
  "serde",
  "serde_with_macros",
 ]
@@ -1398,9 +1391,9 @@ checksum = "cda74da7e1a664f795bb1f8a87ec406fb89a02522cf6e50620d016add6dbbf5c"
 
 [[package]]
 name = "tokio"
-version = "1.17.0"
+version = "1.18.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2af73ac49756f3f7c01172e34a23e5d0216f6c32333757c2c61feb2bbff5a5ee"
+checksum = "4903bf0427cf68dddd5aa6a93220756f8be0c34fcfa9f5e6191e103e15a31395"
 dependencies = [
  "bytes",
  "libc",
