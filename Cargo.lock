@@ -839,9 +839,9 @@ dependencies = [
 
 [[package]]
 name = "moka"
-version = "0.8.2"
+version = "0.8.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ef9d038ced38770a867f2300ef21e1193b5e26d8e8e060fa5c034d1dddc57452"
+checksum = "df72b50274c0988d9f4a6e808e06d9d926f265db6f8bbda1576bcaa658e72763"
 dependencies = [
  "async-io",
  "async-lock",
@@ -1044,9 +1044,9 @@ dependencies = [
 
 [[package]]
 name = "quanta"
-version = "0.9.3"
+version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "20afe714292d5e879d8b12740aa223c6a88f118af41870e8b6196e39a02238a8"
+checksum = "bafd74c340a0a7e79415981ede3460df16b530fd071541901a57416eea950b17"
 dependencies = [
  "crossbeam-utils 0.8.8",
  "libc",
