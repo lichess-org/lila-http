@@ -123,9 +123,9 @@ dependencies = [
 
 [[package]]
 name = "axum-extra"
-version = "0.2.1"
+version = "0.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bb752c1940e365de8be991c909da4af5e07fe84afaaa8c57abd957f1555d8665"
+checksum = "75330529f6b27544cedc6089108602a056d016df6aa4f2cb24408d840392ef2d"
 dependencies = [
  "axum",
  "bytes",
@@ -135,7 +135,7 @@ dependencies = [
  "serde",
  "serde_json",
  "tower",
- "tower-http 0.2.5",
+ "tower-http 0.3.2",
  "tower-layer",
  "tower-service",
 ]
