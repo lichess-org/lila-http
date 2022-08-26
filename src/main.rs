@@ -7,7 +7,7 @@ pub mod repo;
 
 use arena::{ArenaId, ClientData, UserName};
 use axum::{
-    extract::{Path, Query},
+    extract::{Path, Query, State},
     http::StatusCode,
     routing::get,
     Router,
@@ -38,10 +38,9 @@ async fn main() {
         redis::subscribe(opt.redis, repo).await;
     });
 
-    let app = Router::new().route("/", get(root)).route(
-        "/tournament/:id",
-        get(move |id, query| arena(id, query, repo)),
-    );
+    let app = Router::with_state(repo)
+        .route("/", get(root))
+        .route("/tournament/:id", get(arena));
 
     let app = if opt.no_cors {
         app
@@ -67,9 +66,9 @@ struct QueryParams {
 }
 
 async fn arena(
+    State(repo): State<&'static Repo>,
     Path(id): Path<ArenaId>,
     Query(query): Query<QueryParams>,
-    repo: &'static Repo,
 ) -> Result<ErasedJson, StatusCode> {
     let user_id = query.me.map(UserName::into_id);
     let page = query.page;
