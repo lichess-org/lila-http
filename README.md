@@ -9,7 +9,7 @@ request new data about the tournament every 4s or so, with XHR HTTP requests.
 
 Each player requests information about a different leaderboard page: the one they're in.
 
-When a tournament has 17k connected clients, like it happened during they
+When a tournament has 17k connected clients, like it happened during the
 [Agadmator Arena](https://lichess.org/@/Lichess/blog/our-recent-server-issues/FdKHVehW),
 then [lila](https://github.com/ornicar/lila) has to serve about 5k tournament update requests
 per second.
