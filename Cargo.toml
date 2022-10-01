@@ -15,7 +15,7 @@ keywords = ["chess", "lichess"]
 arrayvec = { version = "0.7", features = ["serde"] }
 axum = "0.6.0-rc.1"
 axum-extra = { version = "0.4.0-rc.1", features = ["erased-json"] }
-clap = { version = "3", features = ["derive"] }
+clap = { version = "4", features = ["derive", "deprecated"] }
 env_logger = "0.9"
 futures = "0.3"
 itertools = "0.10"
