@@ -38,9 +38,10 @@ async fn main() {
         redis::subscribe(opt.redis, repo).await;
     });
 
-    let app = Router::with_state(repo)
+    let app = Router::new()
         .route("/", get(root))
-        .route("/tournament/:id", get(arena));
+        .route("/tournament/:id", get(arena))
+        .with_state(repo);
 
     let app = if opt.no_cors {
         app
