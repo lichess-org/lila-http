@@ -24,4 +24,8 @@ impl Repo {
     pub async fn put(&self, full: ArenaFull) {
         self.cache.insert(full.id, Arc::new(full)).await;
     }
+
+    pub fn entry_count(&self) -> u64 {
+        self.cache.entry_count()
+    }
 }

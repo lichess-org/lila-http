@@ -5,6 +5,8 @@ pub mod opt;
 pub mod redis;
 pub mod repo;
 
+use std::sync::atomic::{AtomicU64, Ordering};
+
 use arena::{ArenaId, ClientData, UserName};
 use axum::{
     extract::{Path, Query, State},
@@ -17,6 +19,21 @@ use clap::Parser;
 use opt::Opt;
 use repo::Repo;
 use serde::Deserialize;
+
+use crate::redis::RedisStats;
+
+#[derive(Default)]
+struct HttpStats {
+    hit: AtomicU64,
+    miss: AtomicU64,
+}
+
+#[derive(Clone)]
+struct AppState {
+    redis_stats: &'static RedisStats,
+    http_stats: &'static HttpStats,
+    repo: &'static Repo,
+}
 
 #[tokio::main]
 async fn main() {
@@ -32,16 +49,20 @@ async fn main() {
 
     let opt = dbg!(Opt::parse());
 
-    let repo: &'static Repo = Box::leak(Box::new(Repo::new()));
+    let state = AppState {
+        redis_stats: Box::leak(Box::default()),
+        http_stats: Box::leak(Box::default()),
+        repo: Box::leak(Box::new(Repo::new())),
+    };
 
     tokio::spawn(async move {
-        redis::subscribe(opt.redis, repo).await;
+        redis::subscribe(opt.redis, state.repo, state.redis_stats).await;
     });
 
     let app = Router::new()
         .route("/", get(root))
         .route("/tournament/:id", get(arena))
-        .with_state(repo);
+        .with_state(state);
 
     let app = if opt.no_cors {
         app
@@ -67,17 +88,44 @@ struct QueryParams {
 }
 
 async fn arena(
-    State(repo): State<&'static Repo>,
+    State(state): State<AppState>,
     Path(id): Path<ArenaId>,
     Query(query): Query<QueryParams>,
 ) -> Result<ErasedJson, StatusCode> {
     let user_id = query.me.map(UserName::into_id);
     let page = query.page;
-    repo.get(id)
-        .map(|full| ErasedJson::new(ClientData::new(&full, page, user_id.as_ref())))
-        .ok_or(StatusCode::NOT_FOUND)
+    state
+        .repo
+        .get(id)
+        .map(|full| {
+            state.http_stats.hit.fetch_add(1, Ordering::Relaxed);
+            ErasedJson::new(ClientData::new(&full, page, user_id.as_ref()))
+        })
+        .ok_or_else(|| {
+            state.http_stats.miss.fetch_add(1, Ordering::Relaxed);
+            StatusCode::NOT_FOUND
+        })
 }
 
-async fn root() -> &'static str {
-    "lila-http"
+async fn root(State(state): State<AppState>) -> String {
+    let http_hit = state.http_stats.hit.load(Ordering::Relaxed);
+    let http_miss = state.http_stats.miss.load(Ordering::Relaxed);
+
+    let redis_messages = state.redis_stats.messages.load(Ordering::Relaxed);
+
+    let repo_count = state.repo.entry_count();
+
+    format!(
+        "lila_http {}",
+        [
+            // HttpStats
+            format!("http_hit={http_hit}u"),
+            format!("http_miss={http_miss}u"),
+            // RedisStats
+            format!("redis_messages={redis_messages}u"),
+            // Repo
+            format!("repo_count={repo_count}u"),
+        ]
+        .join(",")
+    )
 }

@@ -1,5 +1,6 @@
 use std::{
     collections::{HashMap, HashSet},
+    sync::atomic::{AtomicU64, Ordering},
     time::Duration,
 };
 
@@ -18,21 +19,30 @@ use crate::{
     repo::Repo,
 };
 
+#[derive(Default)]
+pub struct RedisStats {
+    pub messages: AtomicU64,
+}
+
 fn parse_message(msg: &redis::Msg) -> Result<ArenaFullRedis, SerdeJsonError> {
     serde_json::from_slice(msg.get_payload_bytes())
 }
 
-pub async fn subscribe(opt: RedisOpt, repo: &'static Repo) {
+pub async fn subscribe(opt: RedisOpt, repo: &'static Repo, stats: &'static RedisStats) {
     let client = redis::Client::open(opt.redis_url).expect("valid redis url");
     loop {
-        if let Err(err) = subscribe_inner(&client, repo).await {
+        if let Err(err) = subscribe_inner(&client, repo, stats).await {
             log::error!("{}", err);
         }
         tokio::time::sleep(Duration::from_secs(1)).await;
     }
 }
 
-async fn subscribe_inner(client: &redis::Client, repo: &'static Repo) -> Result<(), RedisError> {
+async fn subscribe_inner(
+    client: &redis::Client,
+    repo: &'static Repo,
+    stats: &'static RedisStats,
+) -> Result<(), RedisError> {
     log::info!("Redis stream connecting ...");
     let con = client.get_tokio_connection().await?;
     let mut pubsub = con.into_pubsub();
@@ -42,7 +52,10 @@ async fn subscribe_inner(client: &redis::Client, repo: &'static Repo) -> Result<
 
     while let Some(msg) = stream.next().await {
         match parse_message(&msg) {
-            Ok(full) => repo.put(full.expand()).await,
+            Ok(full) => {
+                stats.messages.fetch_add(1, Ordering::Relaxed);
+                repo.put(full.expand()).await;
+            }
             Err(msg) => log::error!("Failed to parse message: {}", msg),
         }
     }
