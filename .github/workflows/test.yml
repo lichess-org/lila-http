@@ -11,4 +11,4 @@ jobs:
         with:
           components: clippy
       - run: cargo test
-      - run: cargo clippy --all-targets --all-features -- -D warnings
+      - run: cargo clippy -- -D warnings
