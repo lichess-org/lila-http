@@ -17,8 +17,8 @@ impl Repo {
         }
     }
 
-    pub fn get(&self, id: ArenaId) -> Option<Arc<ArenaFull>> {
-        self.cache.get(&id)
+    pub async fn get(&self, id: ArenaId) -> Option<Arc<ArenaFull>> {
+        self.cache.get(&id).await
     }
 
     pub async fn put(&self, full: ArenaFull) {

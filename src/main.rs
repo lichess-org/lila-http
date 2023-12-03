@@ -98,6 +98,7 @@ async fn arena(
     state
         .repo
         .get(id)
+        .await
         .map(|full| {
             state.http_stats.hit.fetch_add(1, Ordering::Relaxed);
             ErasedJson::new(ClientData::new(&full, page, user_id.as_ref()))

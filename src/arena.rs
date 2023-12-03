@@ -5,7 +5,7 @@ use std::{
 };
 
 use arrayvec::ArrayString;
-use itertools::Itertools;
+use itertools::Itertools as _; // for flatten_ok
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsValue;
 use serde_with::skip_serializing_none;
