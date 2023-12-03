@@ -19,6 +19,7 @@ use clap::Parser;
 use opt::Opt;
 use repo::Repo;
 use serde::Deserialize;
+use tokio::net::TcpListener;
 
 use crate::redis::RedisStats;
 
@@ -77,10 +78,8 @@ async fn main() {
         )
     };
 
-    axum::Server::bind(&opt.bind)
-        .serve(app.into_make_service())
-        .await
-        .expect("bind");
+    let listener = TcpListener::bind(&opt.bind).await.expect("bind");
+    axum::serve(listener, app).await.expect("serve");
 }
 
 #[derive(Debug, Deserialize)]
