@@ -1,6 +1,8 @@
 [Unit]
 Description=lila-http
 After=network.target
+After=sys-subsystem-net-devices-eth1.device
+Requires=sys-subsystem-net-devices-eth1.device
 
 [Service]
 User=lila-http
