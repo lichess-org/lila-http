@@ -10,7 +10,6 @@ readme = "README.md"
 license = "AGPL-3.0+"
 categories = ["games"]
 keywords = ["chess", "lichess"]
-build = "build.rs"
 
 [dependencies]
 arrayvec = { version = "0.7", features = ["serde"] }
@@ -29,6 +28,3 @@ serde_with = "3"
 thiserror = "1"
 tokio = { version = "1", features = ["full"] }
 tower-http = { version = "0.5", features = ["set-header"] }
-
-[build-dependencies]
-vergen = { version = "8.2.4", features = ["git", "gitcl"] }

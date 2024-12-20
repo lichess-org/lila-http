@@ -5,7 +5,7 @@ pub mod opt;
 pub mod redis;
 pub mod repo;
 
-use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
+use std::sync::atomic::{AtomicU64, Ordering};
 
 use arena::{ArenaId, ClientData, UserName};
 use axum::{
@@ -31,7 +31,6 @@ struct HttpStats {
 
 #[derive(Clone)]
 struct AppState {
-    deploy_event_sent: &'static AtomicBool,
     redis_stats: &'static RedisStats,
     http_stats: &'static HttpStats,
     repo: &'static Repo,
@@ -52,7 +51,6 @@ async fn main() {
     let opt = dbg!(Opt::parse());
 
     let state = AppState {
-        deploy_event_sent: Box::leak(Box::default()),
         redis_stats: Box::leak(Box::default()),
         http_stats: Box::leak(Box::default()),
         repo: Box::leak(Box::new(Repo::new())),
@@ -110,29 +108,21 @@ async fn arena(
 }
 
 async fn root(State(state): State<AppState>) -> String {
-    if state.deploy_event_sent.fetch_or(true, Ordering::Relaxed) {
-        let http_hit = state.http_stats.hit.load(Ordering::Relaxed);
-        let http_miss = state.http_stats.miss.load(Ordering::Relaxed);
-        let redis_messages = state.redis_stats.messages.load(Ordering::Relaxed);
-        let repo_count = state.repo.entry_count();
-        format!(
-            "lila_http {}",
-            [
-                // HttpStats
-                format!("http_hit={http_hit}u"),
-                format!("http_miss={http_miss}u"),
-                // RedisStats
-                format!("redis_messages={redis_messages}u"),
-                // Repo
-                format!("repo_count={repo_count}u"),
-            ]
-            .join(",")
-        )
-    } else {
-        format!(
-            "event,program=lila-http commit={:?},text={:?}",
-            env!("VERGEN_GIT_SHA"),
-            env!("VERGEN_GIT_COMMIT_MESSAGE")
-        )
-    }
+    let http_hit = state.http_stats.hit.load(Ordering::Relaxed);
+    let http_miss = state.http_stats.miss.load(Ordering::Relaxed);
+    let redis_messages = state.redis_stats.messages.load(Ordering::Relaxed);
+    let repo_count = state.repo.entry_count();
+    format!(
+        "lila_http {}",
+        [
+            // HttpStats
+            format!("http_hit={http_hit}u"),
+            format!("http_miss={http_miss}u"),
+            // RedisStats
+            format!("redis_messages={redis_messages}u"),
+            // Repo
+            format!("repo_count={repo_count}u"),
+        ]
+        .join(",")
+    )
 }
