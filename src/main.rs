@@ -16,6 +16,7 @@ use axum::{
 };
 use axum_extra::response::ErasedJson;
 use clap::Parser;
+use listenfd::ListenFd;
 use opt::Opt;
 use repo::Repo;
 use serde::Deserialize;
@@ -80,7 +81,17 @@ async fn main() {
         )
     };
 
-    let listener = TcpListener::bind(&opt.bind).await.expect("bind");
+    let listener = match ListenFd::from_env()
+        .take_tcp_listener(0)
+        .expect("tcp listener")
+    {
+        Some(std_listener) => {
+            std_listener.set_nonblocking(true).expect("set nonblocking");
+            TcpListener::from_std(std_listener).expect("listener")
+        }
+        None => TcpListener::bind(&opt.bind).await.expect("bind"),
+    };
+
     axum::serve(listener, app).await.expect("serve");
 }
 

@@ -957,6 +957,7 @@ dependencies = [
  "env_logger",
  "futures",
  "itertools",
+ "listenfd",
  "log",
  "moka",
  "redis",
@@ -967,6 +968,17 @@ dependencies = [
  "tikv-jemallocator",
  "tokio",
  "tower-http",
+]
+
+[[package]]
+name = "listenfd"
+version = "1.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e0500463acd96259d219abb05dc57e5a076ef04b2db9a2112846929b5f174c96"
+dependencies = [
+ "libc",
+ "uuid",
+ "winapi",
 ]
 
 [[package]]
