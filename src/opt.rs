@@ -5,7 +5,7 @@ use clap::Parser;
 #[derive(Parser, Debug)]
 pub struct Opt {
     /// Binding address.
-    #[arg(long, default_value = "127.0.0.1:3000")]
+    #[arg(long, default_value = "127.0.0.1:9001")]
     pub bind: SocketAddr,
     /// Disable access from all origins, for example if a reverse proxy is
     /// responsible for CORS.

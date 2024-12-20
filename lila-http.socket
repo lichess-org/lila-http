@@ -1,0 +1,8 @@
+[Unit]
+Description=lila-http socket
+
+[Socket]
+ListenStream=127.0.0.1:9001
+
+[Install]
+WantedBy=sockets.target
