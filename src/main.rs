@@ -19,9 +19,13 @@ use clap::Parser;
 use opt::Opt;
 use repo::Repo;
 use serde::Deserialize;
+use tikv_jemallocator::Jemalloc;
 use tokio::net::TcpListener;
 
 use crate::redis::RedisStats;
+
+#[global_allocator]
+static GLOBAL: Jemalloc = Jemalloc;
 
 #[derive(Default)]
 struct HttpStats {
