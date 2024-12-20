@@ -62,7 +62,7 @@ async fn main() {
 
     let app = Router::new()
         .route("/", get(root))
-        .route("/tournament/:id", get(arena))
+        .route("/tournament/{id}", get(arena))
         .with_state(state);
 
     let app = if opt.no_cors {

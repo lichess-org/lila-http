@@ -44,8 +44,7 @@ async fn subscribe_inner(
     stats: &'static RedisStats,
 ) -> Result<(), RedisError> {
     log::info!("Redis stream connecting ...");
-    let con = client.get_tokio_connection().await?;
-    let mut pubsub = con.into_pubsub();
+    let mut pubsub = client.get_async_pubsub().await?;
     pubsub.subscribe("http-out").await?;
     let mut stream = pubsub.on_message();
     log::info!("Redis stream connected.");
