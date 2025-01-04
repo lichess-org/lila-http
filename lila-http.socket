@@ -2,7 +2,7 @@
 Description=lila-http socket
 
 [Socket]
-ListenStream=127.0.0.1:9001
+ListenStream=/run/lila-http.socket
 
 [Install]
 WantedBy=sockets.target

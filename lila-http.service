@@ -8,7 +8,7 @@ Requires=sys-subsystem-net-devices-eth1.device
 User=lila-http
 Group=lila-http
 Environment=LILA_HTTP_LOG=lila_http=info
-ExecStart=/usr/local/bin/lila-http --no-cors --bind 127.0.0.1:9001 --redis-url redis://manta:6379
+ExecStart=/usr/local/bin/lila-http --no-cors --redis-url redis://manta:6379
 LimitNOFILE=131072
 PrivateDevices=true
 ProtectSystem=strict
