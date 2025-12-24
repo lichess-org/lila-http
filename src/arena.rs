@@ -175,7 +175,7 @@ impl ClientData<'_> {
             })
         });
         let page = req_page
-            .or_else(|| me.as_ref().map(|player| (player.rank.0 + 9) / 10))
+            .or_else(|| me.as_ref().map(|player| player.rank.0.div_ceil(10)))
             .unwrap_or(1);
         let players = full
             .player_vec
