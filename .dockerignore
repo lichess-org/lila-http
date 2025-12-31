@@ -5,9 +5,3 @@ target/
 Dockerfile
 *.md
 LICENSE
-
-# Nix
-*.nix
-.devenv/
-.devenv*
-result
