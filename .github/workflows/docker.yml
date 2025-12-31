@@ -16,6 +16,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   build:
@@ -27,14 +28,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Nix
-        uses: cachix/install-nix-action@v27
-        with:
-          nix_path: nixpkgs=channel:nixos-unstable
-
-      - name: Install devenv
-        run: nix profile install nixpkgs#devenv
-
       - name: Set tag
         id: tag
         run: |
@@ -44,9 +37,16 @@ jobs:
             echo "tag=latest" >> $GITHUB_OUTPUT
           fi
 
-      - name: Build and push container
-        if: github.event_name != 'pull_request'
-        run: |
-          devenv shell container-push \
-            docker://${{ env.REGISTRY }}/${{ github.repository }}:${{ steps.tag.outputs.tag }} \
-            --dest-creds "${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}"
+      - name: Log in to Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.tag.outputs.tag }}

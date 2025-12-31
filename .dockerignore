@@ -1,0 +1,13 @@
+target/
+.git/
+.gitignore
+.dockerignore
+Dockerfile
+*.md
+LICENSE
+
+# Nix
+*.nix
+.devenv/
+.devenv*
+result
