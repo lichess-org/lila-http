@@ -22,7 +22,7 @@ RUN --mount=type=cache,target=/usr/local/cargo/registry,sharing=locked \
     --mount=type=cache,target=/usr/local/cargo/git,sharing=locked \
     cargo build --release --bin lila-http
 
-FROM debian:bookworm-slim AS runtime
+FROM debian:trixie-slim AS runtime
 
 RUN groupadd -g 1001 lichess && \
     useradd -u 1001 -g lichess -m -d /home/lichess -s /bin/bash lichess
