@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 # Based on https://depot.dev/docs/container-builds/optimal-dockerfiles/rust-dockerfile
 
-FROM rust:1 AS build
+FROM rust:1-trixie AS build
 
 RUN cargo install cargo-chef --locked
 
