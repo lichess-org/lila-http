@@ -8,18 +8,19 @@ RUN cargo install cargo-chef --locked
 WORKDIR /app
 
 COPY Cargo.toml Cargo.lock ./
-COPY src ./src
 
-RUN cargo chef prepare --recipe-path recipe.json
+RUN cargo chef prepare
 
 RUN --mount=type=cache,target=/usr/local/cargo/registry,sharing=locked \
     --mount=type=cache,target=/usr/local/cargo/git,sharing=locked \
-    cargo chef cook --release --recipe-path recipe.json
+    cargo chef cook --tests && \
+    cargo chef cook --release
 
 COPY . .
 
 RUN --mount=type=cache,target=/usr/local/cargo/registry,sharing=locked \
     --mount=type=cache,target=/usr/local/cargo/git,sharing=locked \
+    cargo test && \
     cargo build --release --bin lila-http
 
 FROM debian:trixie-slim AS runtime
