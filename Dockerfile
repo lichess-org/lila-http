@@ -1,35 +1,24 @@
 # syntax=docker/dockerfile:1
-# Based on https://depot.dev/docs/container-builds/optimal-dockerfiles/rust-dockerfile
 
-FROM rust:1-trixie AS build
-
+FROM rust:1-trixie AS chef
 RUN cargo install cargo-chef --locked
-
 WORKDIR /app
 
-COPY Cargo.toml Cargo.lock ./
-
+FROM chef AS planner
+COPY . .
 RUN cargo chef prepare
 
-RUN --mount=type=cache,target=/usr/local/cargo/registry,sharing=locked \
-    --mount=type=cache,target=/usr/local/cargo/git,sharing=locked \
-    cargo chef cook --tests && \
+FROM chef AS builder
+COPY --from=planner /app/recipe.json recipe.json
+RUN cargo chef cook --tests && \
     cargo chef cook --release
-
 COPY . .
-
-RUN --mount=type=cache,target=/usr/local/cargo/registry,sharing=locked \
-    --mount=type=cache,target=/usr/local/cargo/git,sharing=locked \
-    cargo test && \
-    cargo build --release --bin lila-http
+RUN cargo test && \
+    cargo build --release
 
 FROM debian:trixie-slim AS runtime
-
 RUN groupadd -g 1001 lichess && \
     useradd -u 1001 -g lichess -m -d /home/lichess -s /bin/bash lichess
-
-COPY --from=build --chown=lichess:lichess /app/target/release/lila-http /usr/local/bin/lila-http
-
+COPY --from=builder --chown=lichess:lichess /app/target/release/lila-http /usr/local/bin/lila-http
 USER lichess
-
 ENTRYPOINT ["/usr/local/bin/lila-http"]
