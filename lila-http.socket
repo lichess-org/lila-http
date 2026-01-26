@@ -1,8 +1,0 @@
-[Unit]
-Description=lila-http socket
-
-[Socket]
-ListenStream=/run/lila-http.socket
-
-[Install]
-WantedBy=sockets.target

@@ -3,6 +3,7 @@ name: Build and Push Container
 on:
   push:
     branches: [main]
+  pull_request:
   workflow_dispatch:
     inputs:
       tag:
@@ -26,7 +27,7 @@ jobs:
       packages: write
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Set tag
         id: tag
@@ -48,5 +49,6 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          push: true
+          push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.tag.outputs.tag }}
+          target: ${{ github.event_name == 'pull_request' && 'build' || '' }}
