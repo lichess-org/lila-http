@@ -17,7 +17,7 @@ axum-extra = { version = "0.10", features = ["erased-json"] }
 clap = { version = "4", features = ["derive", "deprecated", "env"] }
 env_logger = "0.11"
 futures = "0.3"
-itertools = "0.14"
+itertools = "0.15"
 listenfd = "1"
 log = "0.4"
 moka = { version = "0.12", features = ["future"] }
@@ -28,7 +28,7 @@ serde_with = "3"
 thiserror = "2"
 tikv-jemallocator = { version = "0.7", features = ["unprefixed_malloc_on_supported_platforms"] }
 tokio = { version = "1", features = ["full"] }
-tower-http = { version = "0.6", features = ["set-header"] }
+tower-http = { version = "0.7", features = ["set-header"] }
 
 [profile.release]
 lto = true
