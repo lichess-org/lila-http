@@ -5,11 +5,9 @@ use std::{
 };
 
 use arrayvec::ArrayString;
-use itertools::Itertools as _; // for flatten_ok
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsValue;
 use serde_with::skip_serializing_none;
-use thiserror::Error;
 
 #[derive(Debug, Eq, PartialEq, Deserialize, Hash, Copy, Clone)]
 pub struct ArenaId(pub ArrayString<8>);
@@ -118,27 +116,34 @@ pub struct SheetScores(Box<str>);
 #[derive(Debug, Clone)]
 pub struct OngoingUserGames(HashMap<UserId, GameId>);
 
-#[derive(Error, Debug)]
-#[error("could not parse ongoing games")]
+#[derive(Debug)]
 pub struct InvalidOngoingGames;
+
+impl std::fmt::Display for InvalidOngoingGames {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("could not parse ongoing games")
+    }
+}
+
+impl std::error::Error for InvalidOngoingGames {}
 
 impl FromStr for OngoingUserGames {
     type Err = InvalidOngoingGames;
 
     fn from_str(encoded: &str) -> Result<OngoingUserGames, InvalidOngoingGames> {
-        Ok(OngoingUserGames(
-            encoded
-                .split(',')
-                .filter(|line| !line.is_empty())
-                .map(|enc| {
-                    let (players, game) = enc.split_once('/').ok_or(InvalidOngoingGames)?;
-                    let (p1, p2) = players.split_once('&').ok_or(InvalidOngoingGames)?;
-                    let game_id = GameId(ArrayString::from(game).map_err(|_| InvalidOngoingGames)?);
-                    Ok([(UserId(p1.into()), game_id), (UserId(p2.into()), game_id)])
-                })
-                .flatten_ok()
-                .collect::<Result<_, InvalidOngoingGames>>()?,
-        ))
+        let ongoing_games = encoded
+            .split(',')
+            .filter(|line| !line.is_empty())
+            .try_fold(HashMap::new(), |mut games, enc| {
+                let (players, game) = enc.split_once('/').ok_or(InvalidOngoingGames)?;
+                let (p1, p2) = players.split_once('&').ok_or(InvalidOngoingGames)?;
+                let game_id = GameId(ArrayString::from(game).map_err(|_| InvalidOngoingGames)?);
+                games.insert(UserId(p1.into()), game_id);
+                games.insert(UserId(p2.into()), game_id);
+                Ok(games)
+            })?;
+
+        Ok(OngoingUserGames(ongoing_games))
     }
 }
 
