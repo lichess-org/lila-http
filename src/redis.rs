@@ -8,7 +8,7 @@ use futures::stream::StreamExt;
 use redis::RedisError;
 use serde::Deserialize;
 use serde_json::{Error as SerdeJsonError, Value as JsValue};
-use serde_with::{DisplayFromStr, serde_as};
+use serde_with::{serde_as, DisplayFromStr};
 
 use crate::{
     arena::{

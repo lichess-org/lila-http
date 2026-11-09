@@ -9,10 +9,10 @@ use std::sync::atomic::{AtomicU64, Ordering};
 
 use arena::{ArenaId, ClientData, UserName};
 use axum::{
-    Router,
     extract::{Path, Query, State},
     http::StatusCode,
     routing::get,
+    Router,
 };
 use axum_extra::response::ErasedJson;
 use clap::Parser;
